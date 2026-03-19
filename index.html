@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H4ppyAsian Casino Pro - Game Selection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #151b2d;
+            --bg-glass: rgba(21, 27, 45, 0.95);
+            --accent-gold: #d4af37;
+            --accent-gold-light: #f1c40f;
+            --accent-gold-dark: #b8941f;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --text-primary: #e6e9f0;
+            --text-secondary: #8b92a8;
+            --card-bg: #2c2c2c;
+            --border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(ellipse at top, #1a1f3a 0%, #0a0e1a 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .coin {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, var(--accent-gold-light), var(--accent-gold-dark));
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            opacity: 0.1;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .coin:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 20s; width: 60px; height: 60px; }
+        .coin:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 25s; width: 30px; height: 30px; }
+        .coin:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 22s; width: 50px; height: 50px; }
+        .coin:nth-child(4) { left: 40%; animation-delay: 1s; animation-duration: 18s; width: 35px; height: 35px; }
+        .coin:nth-child(5) { left: 50%; animation-delay: 3s; animation-duration: 24s; width: 55px; height: 55px; }
+        .coin:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 19s; width: 40px; height: 40px; }
+        .coin:nth-child(7) { left: 70%; animation-delay: 2s; animation-duration: 21s; width: 45px; height: 45px; }
+        .coin:nth-child(8) { left: 80%; animation-delay: 4s; animation-duration: 23s; width: 30px; height: 30px; }
+        .coin:nth-child(9) { left: 90%; animation-delay: 1s; animation-duration: 17s; width: 50px; height: 50px; }
+        .coin:nth-child(10) { left: 15%; animation-delay: 6s; animation-duration: 26s; width: 35px; height: 35px; }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.15;
+            }
+            90% {
+                opacity: 0.15;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Gradient Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(10, 14, 26, 0.8) 100%);
+            z-index: -1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 20px 20px;
+            position: relative;
+        }
+
+        .header-top {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 5px;
+            background: rgba(21, 27, 45, 0.8);
+            padding: 5px;
+            border-radius: 8px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-gold-light) 0%, var(--accent-gold) 50%, var(--accent-gold-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+            position: relative;
+            display: inline-block;
+        }
+
+        .logo::after {
+            content: 'PRO';
+            position: absolute;
+            top: -10px;
+            right: -40px;
+            background: var(--accent-red);
+            color: white;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            -webkit-text-fill-color: white;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        .divider {
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '♠ ♥ ♣ ♦';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-primary);
+            padding: 0 15px;
+            color: var(--accent-gold);
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 50px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .welcome-text strong {
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        /* Game Grid */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .game-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            transition: left 0.7s;
+        }
+
+        .game-card:hover::before {
+            left: 100%;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--accent-gold);
+            box-shadow: 0 20px 60px rgba(212, 175, 55, 0.3), 0 0 0 1px rgba(212, 175, 55, 0.5);
+        }
+
+        .game-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+            filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.4));
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .game-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            min-height: 50px;
+        }
+
+        .game-features {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .feature-tag {
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .play-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+            color: #000;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(212, 175, 55, 0.6);
+        }
+
+        .play-button::after {
+            content: '→';
+            margin-left: 8px;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+
+        .game-card:hover .play-button::after {
+            transform: translateX(5px);
+        }
+
+        /* Specific Card Styles */
+        .blackjack-card {
+            border-top: 4px solid var(--accent-gold);
+        }
+
+        .roulette-color-card {
+            border-top: 4px solid var(--accent-red);
+        }
+
+        .roulette-dir-card {
+            border-top: 4px solid var(--accent-green);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: rgba(21, 27, 45, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(5px);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent-gold);
+            display: block;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 5px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            margin-top: 50px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .footer-logo {
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .disclaimer {
+            max-width: 800px;
+            margin: 20px auto 0;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-top {
+                position: static;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .logo::after {
+                right: -35px;
+                font-size: 0.7rem;
+            }
+            
+            .game-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .game-card {
+                padding: 30px 20px;
+            }
+            
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .language-selector {
+                padding: 3px;
+            }
+
+            .lang-btn {
+                padding: 5px 8px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Loading Animation */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Glow Effect */
+        .glow {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .game-card .glow {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .game-card:hover .glow {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+        <div class="coin"></div>
+    </div>
+    <div class="overlay"></div>
+
+    <header>
+        <div class="header-top">
+            <div class="language-selector">
+                <button class="lang-btn active" onclick="changeLanguage('en')">English</button>
+                <button class="lang-btn" onclick="changeLanguage('vi')">Tiếng Việt</button>
+            </div>
+        </div>
+        
+        <h1 class="logo">H4ppyAsian</h1>
+        <p class="tagline" data-i18n="tagline">Professional Casino Suite</p>
+        <div class="divider"></div>
+    </header>
+
+    <div class="container">
+        <div class="welcome-text">
+            <p data-i18n="welcome">Welcome to the <strong>Professional Gambling Analytics Suite</strong>. Select your game below to access<br>
+            advanced tracking systems, pattern recognition, and strategic betting tools.</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value">3</span>
+                <div class="stat-label" data-i18n="statSystems">Active Systems</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">24/7</span>
+                <div class="stat-label" data-i18n="statTracking">Live Tracking</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">AI</span>
+                <div class="stat-label" data-i18n="statAI">Powered Analytics</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value">100%</span>
+                <div class="stat-label" data-i18n="statSecure">Secure</div>
+            </div>
+        </div>
+
+        <div class="game-grid">
+            <!-- Blackjack Card -->
+            <a href="Blackjack.html" class="game-card blackjack-card">
+                <div class="glow"></div>
+                <span class="game-icon">🃏</span>
+                <h2 class="game-title" data-i18n="bjTitle">Blackjack Pro</h2>
+                <p class="game-subtitle" data-i18n="bjDesc">Advanced card counting & strategy advisor with live count tracking and hand-aware recommendations</p>
+                <div class="game-features">
+                    <span class="feature-tag" data-i18n="featCounting">Card Counting</span>
+                    <span class="feature-tag">Live TC</span>
+                    <span class="feature-tag" data-i18n="featStrategy">Basic Strategy</span>
+                </div>
+                <button class="play-button" data-i18n="playNow">Play Now</button>
+            </a>
+
+            <!-- Roulette Color Card -->
+            <a href="Colormode.html" class="game-card roulette-color-card">
+                <div class="glow"></div>
+                <span class="game-icon">🔴</span>
+                <h2 class="game-title" data-i18n="rouletteColorTitle">Roulette Color</h2>
+                <p class="game-subtitle" data-i18n="rouletteColorDesc">Pattern recognition system for Red/Black betting with color tracking and statistical probability analysis</p>
+                <div class="game-features">
+                    <span class="feature-tag" data-i18n="featColor">Color Analysis</span>
+                    <span class="feature-tag" data-i18n="featPattern">Pattern Recognition</span>
+                    <span class="feature-tag" data-i18n="featSmart">Smart Betting</span>
+                </div>
+                <button class="play-button" data-i18n="playNow">Play Now</button>
+            </a>
+
+            <!-- Roulette Directional Card -->
+            <a href="Directionalmode.html" class="game-card roulette-dir-card">
+                <div class="glow"></div>
+                <span class="game-icon">🎡</span>
+                <h2 class="game-title" data-i18n="rouletteDirTitle">Roulette Direction</h2>
+                <p class="game-subtitle" data-i18n="rouletteDirDesc">4-Tier directional tracking system with wheel visualization and neighbor betting strategies</p>
+                <div class="game-features">
+                    <span class="feature-tag">4 Tiers</span>
+                    <span class="feature-tag" data-i18n="featWheel">Wheel View</span>
+                    <span class="feature-tag">CCW/CW Track</span>
+                </div>
+                <button class="play-button" data-i18n="playNow">Play Now</button>
+            </a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-logo">H4ppyAsian Casino Pro</div>
+        <p data-i18n="footerText">Professional Gambling Tools & Analytics Suite v2.0</p>
+        <div class="disclaimer">
+            <p data-i18n="disclaimer">These tools are for educational and entertainment purposes only. Gambling involves risk. 
+            Please gamble responsibly and only bet what you can afford to lose. Past performance does not guarantee future results.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Translations
+        const translations = {
+            en: {
+                tagline: "Professional Casino Suite",
+                welcome: "Welcome to the <strong>Professional Gambling Analytics Suite</strong>. Select your game below to access<br>advanced tracking systems, pattern recognition, and strategic betting tools.",
+                statSystems: "Active Systems",
+                statTracking: "Live Tracking",
+                statAI: "Powered Analytics",
+                statSecure: "Secure",
+                bjTitle: "Blackjack Pro",
+                bjDesc: "Advanced card counting & strategy advisor with live count tracking and hand-aware recommendations",
+                featCounting: "Card Counting",
+                featStrategy: "Basic Strategy",
+                playNow: "Play Now",
+                rouletteColorTitle: "Roulette Color",
+                rouletteColorDesc: "Pattern recognition system for Red/Black betting with color tracking and statistical probability analysis",
+                featColor: "Color Analysis",
+                featPattern: "Pattern Recognition",
+                featSmart: "Smart Betting",
+                rouletteDirTitle: "Roulette Direction",
+                rouletteDirDesc: "4-Tier directional tracking system with wheel visualization and neighbor betting strategies",
+                featWheel: "Wheel View",
+                footerText: "Professional Gambling Tools & Analytics Suite v2.0",
+                disclaimer: "These tools are for educational and entertainment purposes only. Gambling involves risk. Please gamble responsibly and only bet what you can afford to lose. Past performance does not guarantee future results."
+            },
+            vi: {
+                tagline: "Bộ Công Cụ Casino Chuyên Nghiệp",
+                welcome: "Chào mừng đến với <strong>Bộ Phân Tích Cá Cược Chuyên Nghiệp</strong>. Chọn trò chơi bên dưới để truy cập<br>hệ thống theo dõi nâng cao, nhận diện mẫu và công cụ cược chiến lược.",
+                statSystems: "Hệ Thống",
+                statTracking: "Theo Dõi 24/7",
+                statAI: "Phân Tích AI",
+                statSecure: "Bảo Mật",
+                bjTitle: "Blackjack Pro",
+                bjDesc: "Hệ thống đếm bài nâng cao & cố vấn chiến lược với theo dõi đếm trực tiếp và đề xuất dựa trên bài",
+                featCounting: "Đếm Bài",
+                featStrategy: "Chiến Lược Cơ Bản",
+                playNow: "Chơi Ngay",
+                rouletteColorTitle: "Roulette Màu",
+                rouletteColorDesc: "Hệ thống nhận diện mẫu cho cược Đỏ/Đen với phân tích màu sắc và xác suất thống kê",
+                featColor: "Phân Tích Màu",
+                featPattern: "Nhận Diện Mẫu",
+                featSmart: "Cược Thông Minh",
+                rouletteDirTitle: "Roulette Hướng",
+                rouletteDirDesc: "Hệ thống theo dõi 4 cấp độ theo hướng với hình ảnh bánh xe và chiến lược cược hàng xóm",
+                featWheel: "Xem Bánh Xe",
+                footerText: "Bộ Công Cụ Cá Cược Chuyên Nghiệp & Phân Tích v2.0",
+                disclaimer: "Các công cụ này chỉ dùng cho mục đích giáo dục và giải trí. Cá cược có rủi ro. Vui lòng chơi có trách nhiệm và chỉ cược số tiền bạn có thể chấp nhận mất. Kết quả trong quá khứ không đảm bảo kết quả tương lai."
+            }
+        };
+
+        let currentLang = 'en';
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            
+            // Update buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if ((lang === 'en' && btn.textContent === 'English') || 
+                    (lang === 'vi' && btn.textContent === 'Tiếng Việt')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update all elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+        }
+
+        // Add subtle parallax effect to cards on mouse move
+        document.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.game-card');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
+
+            cards.forEach((card, index) => {
+                const speed = (index + 1) * 10;
+                const x = (window.innerWidth - e.pageX * speed) / 100;
+                const y = (window.innerHeight - e.pageY * speed) / 100;
+                
+                // Subtle rotation based on mouse position
+                const rect = card.getBoundingClientRect();
+                const cardX = rect.left + rect.width / 2;
+                const cardY = rect.top + rect.height / 2;
+                const angleX = (e.clientY - cardY) / 50;
+                const angleY = (cardX - e.clientX) / 50;
+                
+                if (e.target.closest('.game-card') === card) {
+                    card.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateZ(20px)`;
+                } else {
+                    card.style.transform = `translateX(${x}px) translateY(${y}px)`;
+                }
+            });
+        });
+
+        // Reset transform when mouse leaves
+        document.addEventListener('mouseleave', () => {
+            const cards = document.querySelectorAll('.game-card');
+            cards.forEach(card => {
+                card.style.transform = '';
+            });
+        });
+
+        // Add click ripple effect
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                let ripple = document.createElement('span');
+                ripple.style.position = 'absolute';
+                ripple.style.width = '20px';
+                ripple.style.height = '20px';
+                ripple.style.background = 'rgba(212, 175, 55, 0.6)';
+                ripple.style.borderRadius = '50%';
+                ripple.style.transform = 'translate(-50%, -50%)';
+                ripple.style.pointerEvents = 'none';
+                ripple.style.animation = 'ripple 0.6s ease-out';
+                
+                const rect = this.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left) + 'px';
+                ripple.style.top = (e.clientY - rect.top) + 'px';
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Add ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    width: 200px;
+                    height: 200px;
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Random floating coins regeneration
+        setInterval(() => {
+            const coins = document.querySelectorAll('.coin');
+            coins.forEach(coin => {
+                if (parseInt(coin.style.top) < -100) {
+                    coin.style.animation = 'none';
+                    setTimeout(() => {
+                        coin.style.animation = '';
+                    }, 10);
+                }
+            });
+        }, 1000);
+    </script>
+</body>
+</html>

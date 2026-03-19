@@ -1,0 +1,2378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="appTitle">Roulette Sequence Analyst | Color Tracking</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #151b2d;
+            --bg-glass: rgba(21, 27, 45, 0.95);
+            --accent-gold: #d4af37;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --tier1-color: #ffd700;
+            --tier2-color: #c0c0c0;
+            --tier3-color: #cd7f32;
+            --tier4-color: #9b59b6;
+            --text-primary: #e6e9f0;
+            --text-secondary: #8b92a8;
+            --accent-blue: #3498db;
+            --paypal-blue: #0070ba;
+            --color-red: #c41e3a;
+            --color-black: #1a1a1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: radial-gradient(ellipse at top, #1a1f3a 0%, #0a0e1a 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-gold), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+
+        .language-selector {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--text-secondary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .language-selector {
+                position: static;
+                transform: none;
+                justify-content: center;
+                margin-top: 10px;
+            }
+        }
+
+        .panel {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .panel-title {
+            color: var(--accent-gold);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+        }
+
+        .status-banner {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .status-banner.win {
+            display: block;
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .status-banner.loss {
+            display: block;
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .color-prediction-display {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .prediction-main {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .prediction-card {
+            flex: 1;
+            max-width: 200px;
+            padding: 20px;
+            border-radius: 12px;
+            border: 3px solid;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prediction-card.red {
+            background: rgba(196, 30, 58, 0.2);
+            border-color: var(--color-red);
+            color: #ff6b6b;
+        }
+
+        .prediction-card.black {
+            background: rgba(26, 26, 26, 0.8);
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .prediction-card.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px currentColor;
+            animation: pulse-prediction 2s infinite;
+        }
+
+        @keyframes pulse-prediction {
+            0%, 100% { box-shadow: 0 0 30px currentColor; }
+            50% { box-shadow: 0 0 50px currentColor; }
+        }
+
+        .prediction-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .prediction-confidence {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .prediction-reason {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        /* Strategy Selector Panel */
+        .strategy-panel {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--accent-blue);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .strategy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .strategy-title {
+            color: var(--accent-blue);
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .active-strategy-badge {
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .strategy-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .strategy-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .strategy-item.active {
+            border-left-color: var(--accent-gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .strategy-item.best-choice {
+            border-left-color: var(--accent-green);
+            background: rgba(46, 204, 113, 0.1);
+            animation: pulse-best 2s infinite;
+        }
+
+        @keyframes pulse-best {
+            0%, 100% { box-shadow: 0 0 5px rgba(46, 204, 113, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(46, 204, 113, 0.5); }
+        }
+
+        .strategy-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .strategy-streak {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .streak-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .streak-value {
+            font-weight: bold;
+            font-size: 0.9rem;
+            min-width: 24px;
+            text-align: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .streak-value.good { color: var(--accent-green); }
+        .streak-value.warning { color: var(--accent-gold); }
+        .streak-value.danger { color: var(--accent-red); }
+
+        .pattern-display {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .pattern-title {
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .pattern-sequence {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .pattern-item {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            border: 2px solid;
+        }
+
+        .pattern-item.red {
+            background: var(--color-red);
+            color: white;
+            border-color: #ff6b6b;
+        }
+
+        .pattern-item.black {
+            background: var(--color-black);
+            color: white;
+            border-color: #fff;
+        }
+
+        .pattern-item.green {
+            background: var(--accent-green);
+            color: #000;
+            border-color: #2ecc71;
+        }
+
+        .pattern-name {
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(212, 175, 55, 0.1);
+            border-radius: 8px;
+        }
+
+        .color-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .color-stat-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+
+        .color-stat-box.red-border { border-color: var(--color-red); }
+        .color-stat-box.black-border { border-color: #fff; }
+
+        .color-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .color-stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .color-stat-value.red { color: #ff6b6b; }
+        .color-stat-value.black { color: #fff; }
+
+        .roulette-table-container {
+            background: #0d5c3b;
+            border-radius: 8px;
+            padding: 8px;
+            border: 3px solid #c4a35a;
+        }
+
+        .roulette-table {
+            display: grid;
+            grid-template-columns: 50px repeat(12, 1fr);
+            grid-template-rows: repeat(3, 45px);
+            gap: 2px;
+            background: #0d5c3b;
+        }
+
+        .table-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .table-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .cell-zero {
+            grid-row: 1 / span 3;
+            grid-column: 1;
+            background: var(--accent-green);
+            color: #000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .cell-red {
+            background: #c41e3a;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .cell-black {
+            background: #1a1a1a;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .cell-red.predict-red, .cell-black.predict-red {
+            box-shadow: 0 0 20px var(--color-red), inset 0 0 15px var(--color-red);
+            border: 3px solid var(--color-red);
+            animation: pulse-red 1.5s infinite;
+        }
+
+        .cell-red.predict-black, .cell-black.predict-black {
+            box-shadow: 0 0 20px #fff, inset 0 0 15px rgba(255,255,255,0.5);
+            border: 3px solid #fff;
+            animation: pulse-white 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 20px var(--color-red), inset 0 0 15px var(--color-red); }
+            50% { box-shadow: 0 0 30px var(--color-red), inset 0 0 20px var(--color-red); }
+        }
+
+        @keyframes pulse-white {
+            0%, 100% { box-shadow: 0 0 20px #fff, inset 0 0 15px rgba(255,255,255,0.5); }
+            50% { box-shadow: 0 0 30px #fff, inset 0 0 20px rgba(255,255,255,0.8); }
+        }
+
+        /* Center Circle Betting Layout */
+        .betting-recommendation {
+            background: linear-gradient(135deg, rgba(21, 27, 45, 0.9), rgba(10, 14, 26, 0.95));
+            border: 2px solid var(--accent-gold);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .betting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .betting-title {
+            color: var(--accent-gold);
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .betting-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .bet-input-small {
+            width: 60px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .center-circle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .betting-circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .betting-circle.red {
+            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c41e3a, #8b1538);
+            border: 4px solid #ff6b6b;
+            box-shadow: 0 0 40px rgba(196, 30, 58, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.2);
+            animation: pulse-red-circle 2s infinite;
+        }
+
+        .betting-circle.black {
+            background: radial-gradient(circle at 30% 30%, #555, #1a1a1a, #000);
+            border: 4px solid #fff;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.1);
+            animation: pulse-black-circle 2s infinite;
+        }
+
+        @keyframes pulse-red-circle {
+            0%, 100% { box-shadow: 0 0 40px rgba(196, 30, 58, 0.6), inset 0 0 30px rgba(255, 255, 255, 0.2); transform: scale(1); }
+            50% { box-shadow: 0 0 60px rgba(196, 30, 58, 0.8), inset 0 0 40px rgba(255, 255, 255, 0.3); transform: scale(1.02); }
+        }
+
+        @keyframes pulse-black-circle {
+            0%, 100% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.1); transform: scale(1); }
+            50% { box-shadow: 0 0 60px rgba(255, 255, 255, 0.5), inset 0 0 40px rgba(255, 255, 255, 0.2); transform: scale(1.02); }
+        }
+
+        .circle-inner {
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .circle-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .circle-color {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .circle-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        .confidence-badge {
+            margin-top: 15px;
+            padding: 8px 20px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--accent-gold);
+            border-radius: 20px;
+            color: var(--accent-gold);
+            font-weight: bold;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .stats-around-circle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .around-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .around-item:hover {
+            border-color: var(--accent-gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .around-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .around-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .around-value.highlight {
+            color: var(--accent-gold);
+            font-size: 1.3rem;
+        }
+
+        .strategy-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .strategy-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .strategy-value {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--accent-blue);
+        }
+
+        .even-odd-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .eo-box-new {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            border-top: 3px solid var(--accent-blue);
+        }
+
+        .eo-label-new {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .eo-value-new {
+            font-size: 0.95rem;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        .session-stats-new {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-box-new {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+        }
+
+        .stat-label-new {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+
+        .stat-value-new {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .stat-value-new.profit { color: var(--accent-green); }
+        .stat-value-new.loss { color: var(--accent-red); }
+        .stat-value-new.gold { color: var(--accent-gold); }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .history-item {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid var(--accent-gold);
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: var(--accent-gold);
+            position: relative;
+            padding: 2px;
+        }
+
+        .history-item.latest {
+            background: var(--accent-gold);
+            color: #000;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        }
+
+        .history-number {
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+
+        .history-color {
+            font-size: 0.5rem;
+            line-height: 1;
+            margin-top: 2px;
+            opacity: 0.8;
+        }
+
+        .history-item.red-spin {
+            border-color: var(--accent-red);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .history-item.black-spin {
+            border-color: #666;
+            background: rgba(100, 100, 100, 0.1);
+        }
+
+        .history-item.zero-spin {
+            border-color: var(--accent-green);
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="number"] {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(212, 175, 55, 0.4);
+            color: var(--accent-gold);
+            padding: 12px;
+            font-size: 1.2rem;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-gold), #b8941f);
+            border: none;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .btn-danger:hover {
+            background: rgba(231, 76, 60, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .controls .btn {
+            flex: 1;
+            font-size: 0.85rem;
+            padding: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 30px;
+            font-style: italic;
+        }
+
+        .disclaimer {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 3px solid var(--accent-red);
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-gold);
+            border-radius: 3px;
+        }
+
+        /* Donation Section Styles */
+        .donation-section {
+            max-width: 1400px;
+            margin: 40px auto 20px;
+            text-align: center;
+        }
+
+        .donation-box {
+            background: linear-gradient(135deg, rgba(0, 112, 186, 0.1), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--paypal-blue);
+            border-radius: 16px;
+            padding: 30px;
+            display: inline-block;
+            box-shadow: 0 8px 32px rgba(0, 112, 186, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .donation-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 156, 222, 0.3);
+            border-color: #009cde;
+        }
+
+        .donation-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .donation-title {
+            color: var(--accent-gold);
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .donation-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        .paypal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #0070ba, #005ea6);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0, 112, 186, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .paypal-btn:hover {
+            background: linear-gradient(135deg, #009cde, #0070ba);
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(0, 156, 222, 0.6);
+        }
+
+        .paypal-email {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 15px;
+            opacity: 0.8;
+            font-family: monospace;
+        }
+
+        .heart-beat {
+            display: inline-block;
+            animation: heartbeat 1.5s ease infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .strategy-switch-notice {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.2), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--accent-green);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            animation: slideDown 0.5s ease;
+        }
+
+        .strategy-switch-title {
+            color: var(--accent-green);
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .strategy-switch-detail {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 data-i18n="appTitle">ROULETTE SEQUENCE ANALYST</h1>
+            <p class="subtitle" data-i18n="subtitle">Color Analysis • Pattern Recognition • Smart Betting</p>
+            <div class="language-selector">
+                <button class="lang-btn active" onclick="changeLanguage('en')">English</button>
+                <button class="lang-btn" onclick="changeLanguage('vi')">Tiếng Việt</button>
+            </div>
+        </header>
+
+        <div class="disclaimer" data-i18n="disclaimer">
+            Color Pattern Mode: Analyzes Red/Black patterns, Even/Odd distribution, and historical number followers. Recommends bets based on streaks and statistical probability.
+        </div>
+
+        <div id="statusBanner" class="status-banner"></div>
+        <div id="strategySwitchNotice" style="display: none;"></div>
+
+        <div class="main-grid">
+            <!-- Left Column -->
+            <div class="left-col">
+                <!-- Strategy Monitor Panel -->
+                <div class="strategy-panel" id="strategyPanel" style="display: none;">
+                    <div class="strategy-header">
+                        <div class="strategy-title" data-i18n="strategyMonitor">Strategy Monitor</div>
+                        <div class="active-strategy-badge" id="activeStrategyBadge">History</div>
+                    </div>
+                    <div class="strategy-list">
+                        <div class="strategy-item" id="strategy-history">
+                            <div class="strategy-name">📊 History Number</div>
+                            <div class="strategy-streak">
+                                <span class="streak-label">Lose:</span>
+                                <span class="streak-value" id="streak-history">0</span>
+                            </div>
+                        </div>
+                        <div class="strategy-item" id="strategy-evenodd">
+                            <div class="strategy-name">🔢 Even/Odd</div>
+                            <div class="strategy-streak">
+                                <span class="streak-label">Lose:</span>
+                                <span class="streak-value" id="streak-evenodd">0</span>
+                            </div>
+                        </div>
+                        <div class="strategy-item" id="strategy-pattern">
+                            <div class="strategy-name">🎯 Pattern</div>
+                            <div class="strategy-streak">
+                                <span class="streak-label">Lose:</span>
+                                <span class="streak-value" id="streak-pattern">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="color-prediction-display" id="colorPredictionDisplay" style="display: none;">
+                    <div class="current-label-top" id="colorPredictionTitle" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">Color Prediction</div>
+                    <div class="prediction-main">
+                        <div class="prediction-card red" id="redPredictionCard">
+                            <div class="prediction-label" id="redLabel">RED</div>
+                            <div class="prediction-confidence" id="redConfidence">0%</div>
+                            <div class="prediction-reason" id="redReason">-</div>
+                        </div>
+                        <div class="prediction-card black" id="blackPredictionCard">
+                            <div class="prediction-label" id="blackLabel">BLACK</div>
+                            <div class="prediction-confidence" id="blackConfidence">0%</div>
+                            <div class="prediction-reason" id="blackReason">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">📥 <span data-i18n="importData">Import Data</span></div>
+                    <textarea id="bulkInput" data-i18n-placeholder="importPlaceholder" placeholder="Paste numbers (comma or newline separated)"></textarea>
+                    <button class="btn" onclick="importFromText()" style="width: 100%;" data-i18n="importButton">Import Data</button>
+                </div>
+
+                <div class="panel" style="margin-top: 15px;">
+                    <div class="panel-title">⌨️ <span data-i18n="nextSpinResult">Next Spin Result</span></div>
+                    <div class="input-row">
+                        <input type="number" id="numberInput" min="0" max="36" data-i18n-placeholder="enterNumber" placeholder="Enter number">
+                        <button class="btn" onclick="addNumber()" data-i18n="spin">Spin</button>
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-secondary" onclick="undoLast()" data-i18n="undo">Undo</button>
+                        <button class="btn btn-danger" onclick="endSession()" data-i18n="endSession">End</button>
+                        <button class="btn btn-secondary" onclick="resetSystem()" data-i18n="resetAll">Reset</button>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 15px;">
+                    <div class="panel-title">📜 <span data-i18n="history">History</span> (<span id="historyCount">0</span>)</div>
+                    <div class="history-grid" id="historyGrid">
+                        <div class="empty-state" style="grid-column: 1/-1;" data-i18n="noData">No data</div>
+                    </div>
+                    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 10px; font-size: 0.75rem; color: var(--text-secondary);">
+                        <span style="color: #ff6b6b;">🔴 Red</span>
+                        <span style="color: #fff;">⚫ Black</span>
+                        <span style="color: #2ecc71;">🟢 Zero</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Column -->
+            <div class="center-col">
+                <div class="pattern-display" id="patternDisplay" style="display: none;">
+                    <div class="pattern-title" id="patternTitle">📊 Pattern Recognition</div>
+                    <div class="pattern-sequence" id="patternSequence"></div>
+                    <div class="pattern-name" id="patternName">Waiting for data...</div>
+                </div>
+
+                <div class="color-stats-grid" id="colorStatsGrid" style="display: none;">
+                    <div class="color-stat-box red-border">
+                        <div class="color-stat-label" id="redCountLabel">Red Count</div>
+                        <div class="color-stat-value red" id="redCount">0</div>
+                    </div>
+                    <div class="color-stat-box black-border">
+                        <div class="color-stat-label" id="blackCountLabel">Black Count</div>
+                        <div class="color-stat-value black" id="blackCount">0</div>
+                    </div>
+                    <div class="color-stat-box red-border">
+                        <div class="color-stat-label" id="redStreakLabel">Red Streak</div>
+                        <div class="color-stat-value red" id="redStreak">0</div>
+                    </div>
+                    <div class="color-stat-box black-border">
+                        <div class="color-stat-label" id="blackStreakLabel">Black Streak</div>
+                        <div class="color-stat-value black" id="blackStreak">0</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">🎰 <span data-i18n="bettingTable">Betting Table</span></div>
+                    <div class="roulette-table-container">
+                        <div class="roulette-table" id="rouletteTable"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-col">
+                <!-- Color Betting Box - Center Circle Design -->
+                <div class="betting-recommendation" id="colorBettingBox" style="display: none;">
+                    <div class="betting-header">
+                        <div class="betting-title" id="colorAdvisorTitle">🎯 Color Advisor</div>
+                        <div class="betting-controls">
+                            <input type="number" class="bet-input-small" id="colorBaseBet" value="0.20" min="0.01" step="0.01" onchange="updateColorBetting()">
+                            <button class="btn btn-secondary" onclick="resetColorMartingale()" style="padding: 6px 12px; font-size: 0.75rem;" id="resetBtn">Reset</button>
+                        </div>
+                    </div>
+
+                    <!-- Center Circle Display -->
+                    <div class="center-circle-container">
+                        <div class="betting-circle" id="recommendedBetCircle">
+                            <div class="circle-inner">
+                                <div class="circle-label" id="circleLabel">BET ON</div>
+                                <div class="circle-color" id="circleColorText">RED</div>
+                                <div class="circle-amount" id="circleAmount">$10</div>
+                            </div>
+                        </div>
+                        <div class="confidence-badge" id="confidenceBadge">85% Confidence</div>
+                    </div>
+
+                    <!-- Stats Around Circle -->
+                    <div class="stats-around-circle">
+                        <div class="around-item">
+                            <div class="around-label" id="levelLabel">Level</div>
+                            <div class="around-value highlight" id="aroundLevel">1x</div>
+                        </div>
+                        <div class="around-item">
+                            <div class="around-label" id="totalRiskLabel">Total Risk</div>
+                            <div class="around-value" id="aroundTotalRisk">$10</div>
+                        </div>
+                        <div class="around-item">
+                            <div class="around-label" id="winRateLabel">Win Rate</div>
+                            <div class="around-value" id="aroundWinRate">0%</div>
+                        </div>
+                        <div class="around-item">
+                            <div class="around-label" id="sessionPLLabel">Session P/L</div>
+                            <div class="around-value" id="aroundSessionPL">$0</div>
+                        </div>
+                    </div>
+
+                    <!-- Strategy Info -->
+                    <div class="strategy-row">
+                        <div class="strategy-label" id="strategyLabel">Strategy</div>
+                        <div class="strategy-value" id="aroundStrategy">Pattern Analysis</div>
+                    </div>
+
+                    <!-- Even/Odd Info -->
+                    <div class="even-odd-row">
+                        <div class="eo-box-new">
+                            <div class="eo-label-new" id="evenNextLabel">Even → Next</div>
+                            <div class="eo-value-new" id="aroundEvenNext">-</div>
+                        </div>
+                        <div class="eo-box-new">
+                            <div class="eo-label-new" id="oddNextLabel">Odd → Next</div>
+                            <div class="eo-value-new" id="aroundOddNext">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Session Stats -->
+                    <div class="session-stats-new">
+                        <div class="stat-box-new">
+                            <div class="stat-label-new" id="winsLabel">Wins</div>
+                            <div class="stat-value-new gold" id="aroundWins">0</div>
+                        </div>
+                        <div class="stat-box-new">
+                            <div class="stat-label-new" id="lossesLabel">Losses</div>
+                            <div class="stat-value-new loss" id="aroundLosses">0</div>
+                        </div>
+                        <div class="stat-box-new">
+                            <div class="stat-label-new" id="lossStreakLabelColor">Lose Streak</div>
+                            <div class="stat-value-new loss" id="aroundLossStreak">0</div>
+                        </div>
+                        <div class="stat-box-new">
+                            <div class="stat-label-new" id="nextBetLabel">Next Bet</div>
+                            <div class="stat-value-new" id="aroundNextBet">$10</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">📊 <span data-i18n="patternAnalysis">Pattern Analysis</span></div>
+                    <div id="patternStats">
+                        <div class="empty-state" data-i18n="enterNumbersPattern">Enter numbers to see patterns</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Donation Section -->
+    <div class="donation-section">
+        <div class="donation-box">
+            <span class="donation-icon">☕</span>
+            <div class="donation-title">Buy me a coffee <span class="heart-beat">❤️</span></div>
+            <div class="donation-text">
+                If this tool helped you win,<br>
+                consider supporting development!
+            </div>
+            <a href="https://www.paypal.com/donate?business=saftblandar@gmail.com&currency_code=USD" 
+               target="_blank" 
+               class="paypal-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white" style="margin-right: 8px;">
+                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 6.082-8.558 6.082H9.63l-1.496 9.478h2.79c.457 0 .85-.334.922-.788.022-.087.045-.176.066-.264.156-.798.324-1.624.486-2.446.047-.254.092-.51.139-.764.073-.399.45-.692.906-.692h.45c4.116 0 7.334-1.674 8.275-6.17.274-1.41.177-2.587-.443-3.449z"/>
+                </svg>
+                Support via PayPal
+            </a>
+            <div class="paypal-email">❤️❤️❤️</div>
+        </div>
+    </div>
+
+    <script>
+        // European wheel order (kept for reference)
+        const wheelOrder = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+        
+        const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+        
+        const tableColumns = [
+            [3, 6, 9],
+            [12, 15, 18],
+            [21, 24, 27],
+            [30, 33, 36],
+            [2, 5, 8],
+            [11, 14, 17],
+            [20, 23, 26],
+            [29, 32, 35],
+            [1, 4, 7],
+            [10, 13, 16],
+            [19, 22, 25],
+            [28, 31, 34]
+        ];
+
+        let history = [];
+        let currentNumber = null;
+        let currentLang = 'en';
+        
+        // Color mode variables
+        let colorMartingaleLevel = 1;
+        let colorSessionProfit = 0;
+        let colorWins = 0;
+        let colorLosses = 0;
+        let colorLossStreak = 0;
+        let currentColorPrediction = null;
+        let lastColorBet = 0;
+        
+        // Strategy Management
+        let strategies = {
+            history: { name: 'history', lossStreak: 0, active: true },
+            evenodd: { name: 'evenodd', lossStreak: 0, active: false },
+            pattern: { name: 'pattern', lossStreak: 0, active: false }
+        };
+        let currentStrategy = 'history';
+        let strategySwitches = [];
+
+        const translations = {
+            en: {
+                appTitle: "ROULETTE SEQUENCE ANALYST",
+                subtitle: "Color Analysis • Pattern Recognition • Smart Betting",
+                disclaimer: "Color Pattern Mode: Analyzes Red/Black patterns, Even/Odd distribution, and historical number followers. Recommends bets based on streaks and statistical probability.",
+                currentNumber: "Current Number",
+                importData: "Import Data",
+                importPlaceholder: "Paste numbers (comma or newline separated)",
+                importButton: "Import Data",
+                nextSpinResult: "Next Spin Result",
+                enterNumber: "Enter number",
+                spin: "Spin",
+                undo: "Undo",
+                endSession: "End",
+                resetAll: "Reset",
+                history: "History",
+                noData: "No data",
+                bettingTable: "Betting Table",
+                patternAnalysis: "Pattern Analysis",
+                enterNumbersPattern: "Enter numbers to see patterns",
+                colorPrediction: "Color Prediction",
+                red: "RED",
+                black: "BLACK",
+                redCount: "Red Count",
+                blackCount: "Black Count",
+                redStreak: "Red Streak",
+                blackStreak: "Black Streak",
+                patternRecognition: "📊 Pattern Recognition",
+                waitingData: "Waiting for data...",
+                colorAdvisor: "🎯 Color Advisor",
+                betOn: "BET ON",
+                confidence: "Confidence",
+                winRate: "Win Rate",
+                strategy: "Strategy",
+                strategyMonitor: "Strategy Monitor",
+                evenNext: "Even → Next",
+                oddNext: "Odd → Next",
+                wins: "Wins",
+                losses: "Losses",
+                nextBet: "Next Bet",
+                level: "Level",
+                totalRisk: "Total Risk",
+                sessionPL: "Session P/L",
+                lossStreak: "Lose Streak",
+                switchedTo: "Switched to",
+                dueToLowerStreak: "due to lower loss streak",
+                historyNumber: "History Number",
+                evenOdd: "Even/Odd",
+                pattern: "Pattern"
+            },
+            vi: {
+                appTitle: "NHÀ PHÂN TÍCH CHUỖI ROULETTE",
+                subtitle: "Phân Tích Màu • Nhận Diện Mẫu • Cược Thông Minh",
+                disclaimer: "Chế độ Màu: Phân tích mẫu Đỏ/Đen, phân phối Chẵn/Lẻ, và số theo sau lịch sử. Đề xuất cược dựa trên chuỗi và xác suất thống kê.",
+                currentNumber: "Số Hiện Tại",
+                importData: "Nhập Dữ Liệu",
+                importPlaceholder: "Dán số (phân cách bằng dấu phẩy hoặc xuống dòng)",
+                importButton: "Nhập Dữ Liệu",
+                nextSpinResult: "Kết Quả Lần Quay Tiếp",
+                enterNumber: "Nhập số",
+                spin: "Quay",
+                undo: "Hoàn tác",
+                endSession: "Kết thúc",
+                resetAll: "Đặt lại",
+                history: "Lịch sử",
+                noData: "Không có dữ liệu",
+                bettingTable: "Bàn Cược",
+                patternAnalysis: "Phân Tích Mẫu",
+                enterNumbersPattern: "Nhập số để xem mẫu",
+                colorPrediction: "Dự Đoán Màu",
+                red: "ĐỎ",
+                black: "ĐEN",
+                redCount: "Số Đỏ",
+                blackCount: "Số Đen",
+                redStreak: "Chuỗi Đỏ",
+                blackStreak: "Chuỗi Đen",
+                patternRecognition: "📊 Nhận Diện Mẫu",
+                waitingData: "Đang chờ dữ liệu...",
+                colorAdvisor: "🎯 Cố Vấn Màu",
+                betOn: "CƯỢC VÀO",
+                confidence: "Độ tin cậy",
+                winRate: "Tỷ lệ thắng",
+                strategy: "Chiến lược",
+                strategyMonitor: "Giám Sát Chiến Lược",
+                evenNext: "Chẵn → Tiếp",
+                oddNext: "Lẻ → Tiếp",
+                wins: "Thắng",
+                losses: "Thua",
+                nextBet: "Cược tiếp",
+                level: "Cấp",
+                totalRisk: "Rủi Ro Tổng",
+                sessionPL: "Lãi/Lỗ Phiên",
+                lossStreak: "Chuỗi Thua",
+                switchedTo: "Chuyển sang",
+                dueToLowerStreak: "do chuỗi thua thấp hơn",
+                historyNumber: "Lịch sử Số",
+                evenOdd: "Chẵn/Lẻ",
+                pattern: "Mẫu"
+            }
+        };
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.textContent.toLowerCase().includes(lang) || 
+                   (lang === 'en' && btn.textContent === 'English') ||
+                   (lang === 'vi' && btn.textContent === 'Tiếng Việt')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            updateStrategyDisplay();
+            if (history.length > 0) {
+                updateDisplay();
+            }
+        }
+
+        function init() {
+            createRouletteTable();
+        }
+
+        function createRouletteTable() {
+            const table = document.getElementById('rouletteTable');
+            table.innerHTML = '';
+            
+            const zeroCell = document.createElement('div');
+            zeroCell.className = 'table-cell cell-zero';
+            zeroCell.textContent = '0';
+            zeroCell.onclick = () => inputNumber(0);
+            table.appendChild(zeroCell);
+            
+            for (let col = 0; col < 12; col++) {
+                for (let row = 0; row < 3; row++) {
+                    const num = tableColumns[col][row];
+                    const cell = document.createElement('div');
+                    const isRed = redNumbers.includes(num);
+                    cell.className = 'table-cell ' + (isRed ? 'cell-red' : 'cell-black');
+                    cell.textContent = num;
+                    cell.id = 'table-num-' + num;
+                    cell.onclick = () => inputNumber(num);
+                    table.appendChild(cell);
+                }
+            }
+        }
+
+        function highlightTableTiers() {
+            document.querySelectorAll('.table-cell').forEach(cell => {
+                cell.classList.remove('predict-red', 'predict-black');
+            });
+            
+            if (currentColorPrediction) {
+                const predictClass = currentColorPrediction.color === 'red' ? 'predict-red' : 'predict-black';
+                document.querySelectorAll('.table-cell').forEach(cell => {
+                    const num = parseInt(cell.textContent);
+                    if (!isNaN(num)) {
+                        const isRed = redNumbers.includes(num);
+                        if ((currentColorPrediction.color === 'red' && isRed) || 
+                            (currentColorPrediction.color === 'black' && !isRed && num !== 0)) {
+                            cell.classList.add(predictClass);
+                        }
+                    }
+                });
+            }
+        }
+
+        // Strategy Analysis Functions
+        function getHistoryPrediction() {
+            if (history.length === 0) return null;
+            
+            const lastEntry = history[history.length - 1];
+            const targetNum = lastEntry.num;
+            
+            const numberFollowers = { red: 0, black: 0, green: 0 };
+            let numberTotal = 0;
+            
+            for (let i = 0; i < history.length - 1; i++) {
+                if (history[i].num === targetNum) {
+                    const nextNum = history[i + 1].num;
+                    if (nextNum === 0) numberFollowers.green++;
+                    else if (redNumbers.includes(nextNum)) numberFollowers.red++;
+                    else numberFollowers.black++;
+                    numberTotal++;
+                }
+            }
+            
+            if (numberTotal === 0) return null;
+            
+            const redPct = (numberFollowers.red / numberTotal) * 100;
+            const blackPct = (numberFollowers.black / numberTotal) * 100;
+            
+            return {
+                color: redPct > blackPct ? 'red' : 'black',
+                confidence: Math.round(Math.max(redPct, blackPct)),
+                reason: `${targetNum} → ${redPct > blackPct ? 'Red' : 'Black'} ${Math.max(numberFollowers.red, numberFollowers.black)}/${numberTotal}`,
+                method: 'history'
+            };
+        }
+
+        function getEvenOddPrediction() {
+            if (history.length === 0) return null;
+            
+            const lastEntry = history[history.length - 1];
+            const targetNum = lastEntry.num;
+            const isEven = targetNum % 2 === 0 && targetNum !== 0;
+            const isOdd = targetNum % 2 === 1;
+            
+            const evenOddFollowers = { red: 0, black: 0 };
+            let eoTotal = 0;
+            
+            for (let i = 0; i < history.length - 1; i++) {
+                const currentIsEven = history[i].num % 2 === 0 && history[i].num !== 0;
+                const currentIsOdd = history[i].num % 2 === 1;
+                
+                if ((isEven && currentIsEven) || (isOdd && currentIsOdd)) {
+                    const nextNum = history[i + 1].num;
+                    if (nextNum !== 0) {
+                        if (redNumbers.includes(nextNum)) evenOddFollowers.red++;
+                        else evenOddFollowers.black++;
+                        eoTotal++;
+                    }
+                }
+            }
+            
+            if (eoTotal === 0) return null;
+            
+            const redPct = (evenOddFollowers.red / eoTotal) * 100;
+            const blackPct = (evenOddFollowers.black / eoTotal) * 100;
+            const type = isEven ? 'Even' : 'Odd';
+            
+            return {
+                color: redPct > blackPct ? 'red' : 'black',
+                confidence: Math.round(Math.max(redPct, blackPct)),
+                reason: `${type} → ${redPct > blackPct ? 'Red' : 'Black'} ${Math.max(evenOddFollowers.red, evenOddFollowers.black)}/${eoTotal}`,
+                method: 'evenodd'
+            };
+        }
+
+        function getPatternPrediction() {
+            if (history.length < 4) return null;
+            
+            const last4 = history.slice(-4).map(h => {
+                if (h.num === 0) return 'G';
+                return redNumbers.includes(h.num) ? 'R' : 'B';
+            });
+            
+            const last4Str = last4.join('-');
+            
+            const patterns = {
+                'The Streaks': ['R-R-R-R', 'B-B-B-B'],
+                'The Choppy': ['R-B-R-B', 'B-R-B-R'],
+                'The Doubles': ['R-R-B-B', 'B-B-R-R'],
+                'The Sandwiches': ['R-B-B-R', 'B-R-R-B'],
+                'The Triple Lead': ['R-R-R-B', 'B-B-B-R'],
+                'The Single Lead': ['R-B-B-B', 'B-R-R-R'],
+                'The Off-Beat': ['R-B-R-R', 'B-R-B-B']
+            };
+            
+            for (const [name, sequences] of Object.entries(patterns)) {
+                if (sequences.includes(last4Str)) {
+                    let suggestion, confidence;
+                    
+                    if (name === 'The Streaks') {
+                        suggestion = last4[0] === 'R' ? 'red' : 'black';
+                        confidence = 75;
+                    } else if (name === 'The Choppy') {
+                        suggestion = last4[last4.length - 1] === 'R' ? 'black' : 'red';
+                        confidence = 70;
+                    } else if (name === 'The Doubles') {
+                        suggestion = last4[last4.length - 1] === 'R' ? 'red' : 'black';
+                        confidence = 65;
+                    } else if (name === 'The Sandwiches') {
+                        suggestion = last4[0] === 'R' ? 'red' : 'black';
+                        confidence = 60;
+                    } else if (name === 'The Triple Lead') {
+                        suggestion = last4[last4.length - 1] === 'R' ? 'black' : 'red';
+                        confidence = 70;
+                    } else if (name === 'The Single Lead') {
+                        suggestion = last4[1] === 'R' ? 'red' : 'black';
+                        confidence = 65;
+                    } else {
+                        suggestion = last4[last4.length - 1] === 'R' ? 'red' : 'black';
+                        confidence = 60;
+                    }
+                    
+                    return {
+                        color: suggestion,
+                        confidence: confidence,
+                        reason: `Pattern: ${name}`,
+                        method: 'pattern'
+                    };
+                }
+            }
+            
+            return null;
+        }
+
+        function analyzeAllStrategies() {
+            const historyPred = getHistoryPrediction();
+            const evenOddPred = getEvenOddPrediction();
+            const patternPred = getPatternPrediction();
+            
+            return {
+                history: historyPred,
+                evenodd: evenOddPred,
+                pattern: patternPred
+            };
+        }
+
+        function selectBestStrategy() {
+            // Priority: history > evenodd > pattern (when streaks are equal)
+            const streaks = [
+                { name: 'history', streak: strategies.history.lossStreak, available: getHistoryPrediction() !== null },
+                { name: 'evenodd', streak: strategies.evenodd.lossStreak, available: getEvenOddPrediction() !== null },
+                { name: 'pattern', streak: strategies.pattern.lossStreak, available: getPatternPrediction() !== null }
+            ].filter(s => s.available);
+            
+            if (streaks.length === 0) return 'history';
+            
+            // Sort by streak (ascending), then by priority
+            streaks.sort((a, b) => {
+                if (a.streak !== b.streak) return a.streak - b.streak;
+                // If equal, maintain priority order: history > evenodd > pattern
+                const priority = { history: 0, evenodd: 1, pattern: 2 };
+                return priority[a.name] - priority[b.name];
+            });
+            
+            return streaks[0].name;
+        }
+
+        function checkStrategySwitch() {
+            // Only check after 2 consecutive losses on current strategy
+            if (strategies[currentStrategy].lossStreak < 2) return false;
+            
+            const bestStrategy = selectBestStrategy();
+            
+            if (bestStrategy !== currentStrategy) {
+                const oldStrategy = currentStrategy;
+                currentStrategy = bestStrategy;
+                
+                // Reset streaks for all strategies when switching
+                Object.keys(strategies).forEach(key => {
+                    strategies[key].lossStreak = 0;
+                    strategies[key].active = (key === currentStrategy);
+                });
+                
+                showStrategySwitchNotice(oldStrategy, bestStrategy);
+                return true;
+            }
+            
+            return false;
+        }
+
+        function showStrategySwitchNotice(from, to) {
+            const notice = document.getElementById('strategySwitchNotice');
+            const fromName = translations[currentLang][from] || from;
+            const toName = translations[currentLang][to] || to;
+            const switchedTo = translations[currentLang].switchedTo || 'Switched to';
+            const dueToLower = translations[currentLang].dueToLowerStreak || 'due to lower loss streak';
+            
+            notice.innerHTML = `
+                <div class="strategy-switch-title">🔄 ${switchedTo} ${toName}</div>
+                <div class="strategy-switch-detail">${fromName}: ${strategies[from].lossStreak} losses → ${toName}: ${strategies[to].lossStreak} losses</div>
+            `;
+            notice.style.display = 'block';
+            notice.className = 'strategy-switch-notice';
+            
+            setTimeout(() => {
+                notice.style.display = 'none';
+            }, 5000);
+        }
+
+        function updateStrategyDisplay() {
+            // Update strategy panel
+            document.getElementById('strategyPanel').style.display = history.length > 0 ? 'block' : 'none';
+            
+            // Update active badge
+            const activeName = translations[currentLang][currentStrategy] || currentStrategy;
+            document.getElementById('activeStrategyBadge').textContent = activeName;
+            
+            // Update each strategy item
+            ['history', 'evenodd', 'pattern'].forEach(strat => {
+                const el = document.getElementById(`strategy-${strat}`);
+                const streakEl = document.getElementById(`streak-${strat}`);
+                
+                // Update active state
+                if (strat === currentStrategy) {
+                    el.classList.add('active');
+                    el.classList.remove('best-choice');
+                } else if (strategies[strat].lossStreak < strategies[currentStrategy].lossStreak && strategies[currentStrategy].lossStreak >= 2) {
+                    el.classList.remove('active');
+                    el.classList.add('best-choice');
+                } else {
+                    el.classList.remove('active', 'best-choice');
+                }
+                
+                // Update streak value with color coding
+                const streak = strategies[strat].lossStreak;
+                streakEl.textContent = streak;
+                streakEl.className = 'streak-value ' + (streak === 0 ? 'good' : streak < 2 ? 'warning' : 'danger');
+            });
+        }
+
+        function updateColorDisplay() {
+            if (history.length === 0) {
+                document.getElementById('colorPredictionDisplay').style.display = 'none';
+                document.getElementById('colorStatsGrid').style.display = 'none';
+                document.getElementById('patternDisplay').style.display = 'none';
+                document.getElementById('colorBettingBox').style.display = 'none';
+                return;
+            }
+            
+            // Check if we need to switch strategy before displaying
+            checkStrategySwitch();
+            
+            // Show elements
+            document.getElementById('colorPredictionDisplay').style.display = 'block';
+            document.getElementById('colorStatsGrid').style.display = 'grid';
+            document.getElementById('patternDisplay').style.display = 'block';
+            document.getElementById('colorBettingBox').style.display = 'block';
+            
+            // Get prediction from current strategy
+            let prediction;
+            switch(currentStrategy) {
+                case 'history':
+                    prediction = getHistoryPrediction();
+                    break;
+                case 'evenodd':
+                    prediction = getEvenOddPrediction();
+                    break;
+                case 'pattern':
+                    prediction = getPatternPrediction();
+                    break;
+                default:
+                    prediction = getHistoryPrediction();
+            }
+            
+            // Fallback if current strategy has no data
+            if (!prediction) {
+                const all = analyzeAllStrategies();
+                if (all.history) {
+                    prediction = all.history;
+                    currentStrategy = 'history';
+                } else if (all.evenodd) {
+                    prediction = all.evenodd;
+                    currentStrategy = 'evenodd';
+                } else if (all.pattern) {
+                    prediction = all.pattern;
+                    currentStrategy = 'pattern';
+                }
+            }
+            
+            currentColorPrediction = prediction;
+            
+            // Update prediction cards
+            const redCard = document.getElementById('redPredictionCard');
+            const blackCard = document.getElementById('blackPredictionCard');
+            
+            if (prediction) {
+                if (prediction.color === 'red') {
+                    redCard.classList.add('active');
+                    blackCard.classList.remove('active');
+                    document.getElementById('redConfidence').textContent = prediction.confidence + '%';
+                    document.getElementById('redReason').textContent = prediction.reason;
+                    document.getElementById('blackConfidence').textContent = (100 - prediction.confidence) + '%';
+                    document.getElementById('blackReason').textContent = currentLang === 'vi' ? 'Xu hướng ngược' : 'Counter-trend';
+                } else {
+                    redCard.classList.remove('active');
+                    blackCard.classList.add('active');
+                    document.getElementById('blackConfidence').textContent = prediction.confidence + '%';
+                    document.getElementById('blackReason').textContent = prediction.reason;
+                    document.getElementById('redConfidence').textContent = (100 - prediction.confidence) + '%';
+                    document.getElementById('redReason').textContent = currentLang === 'vi' ? 'Xu hướng ngược' : 'Counter-trend';
+                }
+            }
+            
+            // Update pattern display (always show actual pattern regardless of strategy)
+            const pattern = detectPattern();
+            const seqContainer = document.getElementById('patternSequence');
+            seqContainer.innerHTML = '';
+            
+            if (pattern && pattern.sequence) {
+                pattern.sequence.forEach((col, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'pattern-item ' + (col === 'R' ? 'red' : col === 'B' ? 'black' : 'green');
+                    div.textContent = col;
+                    if (idx === pattern.sequence.length - 1) {
+                        div.style.boxShadow = '0 0 15px currentColor';
+                        div.style.transform = 'scale(1.2)';
+                    }
+                    seqContainer.appendChild(div);
+                });
+                
+                document.getElementById('patternName').textContent = pattern.name;
+            }
+            
+            // Update stats
+            const stats = calculateColorStats();
+            document.getElementById('redCount').textContent = stats.redCount;
+            document.getElementById('blackCount').textContent = stats.blackCount;
+            document.getElementById('redStreak').textContent = stats.redStreak;
+            document.getElementById('blackStreak').textContent = stats.blackStreak;
+            
+            // Update even/odd analysis
+            updateEvenOddAnalysis();
+            
+            // Update betting recommendation with circle
+            updateColorBetting();
+            
+            // Update strategy display
+            updateStrategyDisplay();
+            
+            // Highlight table
+            highlightTableTiers();
+        }
+
+        function detectPattern() {
+            if (history.length < 4) return { name: 'Insufficient data', sequence: [] };
+            
+            const last4 = history.slice(-4).map(h => {
+                if (h.num === 0) return 'G';
+                return redNumbers.includes(h.num) ? 'R' : 'B';
+            });
+            
+            const last4Str = last4.join('-');
+            const patterns = {
+                'The Streaks': ['R-R-R-R', 'B-B-B-B'],
+                'The Choppy': ['R-B-R-B', 'B-R-B-R'],
+                'The Doubles': ['R-R-B-B', 'B-B-R-R'],
+                'The Sandwiches': ['R-B-B-R', 'B-R-R-B'],
+                'The Triple Lead': ['R-R-R-B', 'B-B-B-R'],
+                'The Single Lead': ['R-B-B-B', 'B-R-R-R'],
+                'The Off-Beat': ['R-B-R-R', 'B-R-B-B']
+            };
+            
+            for (const [name, sequences] of Object.entries(patterns)) {
+                if (sequences.includes(last4Str)) {
+                    return { name, sequence: last4 };
+                }
+            }
+            
+            return { name: 'Random', sequence: last4 };
+        }
+
+        function calculateColorStats() {
+            let redCount = 0, blackCount = 0;
+            let redStreak = 0, blackStreak = 0;
+            let currentRedStreak = 0, currentBlackStreak = 0;
+            
+            history.forEach(h => {
+                if (h.num === 0) {
+                    currentRedStreak = 0;
+                    currentBlackStreak = 0;
+                } else if (redNumbers.includes(h.num)) {
+                    redCount++;
+                    currentRedStreak++;
+                    currentBlackStreak = 0;
+                    if (currentRedStreak > redStreak) redStreak = currentRedStreak;
+                } else {
+                    blackCount++;
+                    currentBlackStreak++;
+                    currentRedStreak = 0;
+                    if (currentBlackStreak > blackStreak) blackStreak = currentBlackStreak;
+                }
+            });
+            
+            return { redCount, blackCount, redStreak, blackStreak };
+        }
+
+        function updateEvenOddAnalysis() {
+            if (history.length < 2) return;
+            
+            const evenNext = { red: 0, black: 0 };
+            const oddNext = { red: 0, black: 0 };
+            let evenTotal = 0, oddTotal = 0;
+            
+            for (let i = 0; i < history.length - 1; i++) {
+                const nextNum = history[i + 1].num;
+                if (nextNum === 0) continue;
+                
+                if (history[i].num % 2 === 0 && history[i].num !== 0) {
+                    if (redNumbers.includes(nextNum)) evenNext.red++;
+                    else evenNext.black++;
+                    evenTotal++;
+                } else if (history[i].num % 2 === 1) {
+                    if (redNumbers.includes(nextNum)) oddNext.red++;
+                    else oddNext.black++;
+                    oddTotal++;
+                }
+            }
+            
+            const evenRedPct = evenTotal > 0 ? Math.round((evenNext.red / evenTotal) * 100) : 0;
+            const oddRedPct = oddTotal > 0 ? Math.round((oddNext.red / oddTotal) * 100) : 0;
+            
+            document.getElementById('aroundEvenNext').textContent = evenTotal > 0 ? `${evenRedPct}% ${currentLang === 'vi' ? 'Đỏ' : 'Red'}` : '-';
+            document.getElementById('aroundOddNext').textContent = oddTotal > 0 ? `${oddRedPct}% ${currentLang === 'vi' ? 'Đỏ' : 'Red'}` : '-';
+        }
+
+        function updateColorBetting() {
+            if (!currentColorPrediction) return;
+            
+            const baseBet = parseFloat(document.getElementById('colorBaseBet').value) || 10;
+            const multiplier = Math.pow(2, colorMartingaleLevel - 1);
+            const currentBet = baseBet * multiplier;
+            
+            const circle = document.getElementById('recommendedBetCircle');
+            const colorText = document.getElementById('circleColorText');
+            const amountText = document.getElementById('circleAmount');
+            const confidenceBadge = document.getElementById('confidenceBadge');
+            
+            circle.classList.remove('red', 'black');
+            circle.classList.add(currentColorPrediction.color);
+            
+            const colorDisplayText = currentColorPrediction.color === 'red' ? 
+                (currentLang === 'vi' ? 'ĐỎ' : 'RED') : 
+                (currentLang === 'vi' ? 'ĐEN' : 'BLACK');
+            
+            colorText.textContent = colorDisplayText;
+            amountText.textContent = '$' + currentBet.toFixed(2);
+            
+            const confidenceText = currentLang === 'vi' ? translations.vi.confidence : translations.en.confidence;
+            confidenceBadge.textContent = currentColorPrediction.confidence + '% ' + confidenceText;
+            
+            document.getElementById('aroundLevel').textContent = multiplier + 'x';
+            
+            let totalRisk = 0;
+            for (let i = 0; i < colorMartingaleLevel; i++) {
+                totalRisk += baseBet * Math.pow(2, i);
+            }
+            document.getElementById('aroundTotalRisk').textContent = '$' + totalRisk.toFixed(2);
+            
+            const totalTrades = colorWins + colorLosses;
+            const winRate = totalTrades > 0 ? Math.round((colorWins / totalTrades) * 100) : 0;
+            document.getElementById('aroundWinRate').textContent = winRate + '%';
+            
+            const plElement = document.getElementById('aroundSessionPL');
+            plElement.textContent = (colorSessionProfit >= 0 ? '+' : '') + '$' + colorSessionProfit.toFixed(2);
+            plElement.style.color = colorSessionProfit >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+            
+            const strategyNames = {
+                history: currentLang === 'vi' ? 'Lịch sử Số' : 'History Number',
+                evenodd: currentLang === 'vi' ? 'Chẵn/Lẻ' : 'Even/Odd',
+                pattern: currentLang === 'vi' ? 'Nhận diện Mẫu' : 'Pattern Analysis'
+            };
+            document.getElementById('aroundStrategy').textContent = strategyNames[currentStrategy];
+            
+            document.getElementById('aroundWins').textContent = colorWins;
+            document.getElementById('aroundLosses').textContent = colorLosses;
+            document.getElementById('aroundLossStreak').textContent = colorLossStreak;
+            document.getElementById('aroundNextBet').textContent = '$' + currentBet.toFixed(2);
+            
+            lastColorBet = currentBet;
+        }
+
+        function processColorWinLoss(spinNumber) {
+            if (!currentColorPrediction) return;
+            
+            const isRed = redNumbers.includes(spinNumber);
+            const isWin = (currentColorPrediction.color === 'red' && isRed) || 
+                         (currentColorPrediction.color === 'black' && !isRed && spinNumber !== 0);
+            
+            const colorDisplay = currentColorPrediction.color === 'red' ? 
+                (currentLang === 'vi' ? 'ĐỎ' : 'RED') : 
+                (currentLang === 'vi' ? 'ĐEN' : 'BLACK');
+            
+            if (isWin) {
+                const winAmount = lastColorBet;
+                colorSessionProfit += winAmount;
+                colorWins++;
+                colorLossStreak = 0;
+                
+                // Reset loss streak for current strategy
+                strategies[currentStrategy].lossStreak = 0;
+                
+                const winText = currentLang === 'vi' ? 'THẮNG' : 'WIN';
+                showStatus(`🎉 ${winText}! ${spinNumber} is ${colorDisplay}! Profit: +$${winAmount.toFixed(2)}`, true);
+                colorMartingaleLevel = 1;
+            } else {
+                colorSessionProfit -= lastColorBet;
+                colorLosses++;
+                colorLossStreak++;
+                
+                // Increment loss streak for current strategy
+                strategies[currentStrategy].lossStreak++;
+                
+                if (spinNumber === 0) {
+                    const zeroText = currentLang === 'vi' ? 'SỐ 0' : 'ZERO';
+                    showStatus(`❌ ${zeroText}! ${spinNumber} is Green. Loss: -$${lastColorBet.toFixed(2)}`, false);
+                } else {
+                    const actualColor = isRed ? 
+                        (currentLang === 'vi' ? 'ĐỎ' : 'RED') : 
+                        (currentLang === 'vi' ? 'ĐEN' : 'BLACK');
+                    const lossText = currentLang === 'vi' ? 'THUA' : 'LOSS';
+                    const strategyName = translations[currentLang][currentStrategy];
+                    showStatus(`❌ ${lossText}! ${spinNumber} is ${actualColor}, predicted ${colorDisplay} (${strategyName}). Streak: ${strategies[currentStrategy].lossStreak}`, false);
+                }
+                colorMartingaleLevel++;
+            }
+            
+            updateColorBetting();
+            updateStrategyDisplay();
+        }
+
+        function resetColorMartingale() {
+            colorMartingaleLevel = 1;
+            updateColorBetting();
+            const msg = currentLang === 'vi' ? 'Martingale đặt lại về 1x' : 'Martingale reset to 1x';
+            showStatus(msg, true);
+        }
+
+        function importFromText() {
+            const text = document.getElementById('bulkInput').value;
+            if (!text.trim()) return;
+
+            const matches = text.match(/\b([0-9]|[12][0-9]|3[0-6])\b/g);
+            if (!matches) return;
+
+            const numbers = matches.map(n => parseInt(n));
+            
+            numbers.forEach(n => {
+                if (history.length > 0) {
+                    processColorWinLoss(n);
+                }
+                history.push({num: n, dir: 'left'});
+            });
+            
+            if (numbers.length > 0) {
+                currentNumber = numbers[numbers.length - 1];
+            }
+            
+            document.getElementById('bulkInput').value = '';
+            updateDisplay();
+        }
+
+        function inputNumber(num) {
+            document.getElementById('numberInput').value = num;
+            addNumber();
+        }
+
+        function addNumber() {
+            const input = document.getElementById('numberInput');
+            const num = parseInt(input.value);
+            
+            if (isNaN(num) || num < 0 || num > 36) {
+                const alertMsg = currentLang === 'vi' ? 'Nhập 0-36' : 'Enter 0-36';
+                alert(alertMsg);
+                return;
+            }
+            
+            if (history.length > 0) {
+                processColorWinLoss(num);
+            }
+            
+            history.push({num: num, dir: 'left'});
+            currentNumber = num;
+            
+            input.value = '';
+            updateDisplay();
+        }
+
+        function undoLast() {
+            if (history.length > 0) {
+                const removed = history.pop();
+                recalculateStats();
+                
+                if (history.length > 0) {
+                    currentNumber = history[history.length - 1].num;
+                } else {
+                    currentNumber = null;
+                }
+                updateDisplay();
+            }
+        }
+
+        function recalculateStats() {
+            // Reset everything
+            colorSessionProfit = 0;
+            colorWins = 0;
+            colorLosses = 0;
+            colorLossStreak = 0;
+            colorMartingaleLevel = 1;
+            
+            Object.keys(strategies).forEach(key => {
+                strategies[key].lossStreak = 0;
+            });
+            
+            // Replay history
+            let tempHistory = [];
+            
+            for (let i = 0; i < history.length; i++) {
+                if (i === 0) {
+                    tempHistory.push(history[i]);
+                    continue;
+                }
+                
+                // Restore state for prediction
+                const savedHistory = history;
+                history = tempHistory;
+                
+                // Check strategy switch before processing
+                if (strategies[currentStrategy].lossStreak >= 2) {
+                    const best = selectBestStrategy();
+                    if (best !== currentStrategy) {
+                        currentStrategy = best;
+                        Object.keys(strategies).forEach(k => strategies[k].lossStreak = 0);
+                    }
+                }
+                
+                // Get prediction
+                let pred;
+                switch(currentStrategy) {
+                    case 'history': pred = getHistoryPrediction(); break;
+                    case 'evenodd': pred = getEvenOddPrediction(); break;
+                    case 'pattern': pred = getPatternPrediction(); break;
+                }
+                
+                if (pred) {
+                    const spinNum = savedHistory[i].num;
+                    const isRed = redNumbers.includes(spinNum);
+                    const isWin = (pred.color === 'red' && isRed) || (pred.color === 'black' && !isRed && spinNum !== 0);
+                    
+                    if (isWin) {
+                        colorSessionProfit += (parseFloat(document.getElementById('colorBaseBet').value) || 0.20) * Math.pow(2, colorMartingaleLevel - 1);
+                        colorWins++;
+                        strategies[currentStrategy].lossStreak = 0;
+                        colorMartingaleLevel = 1;
+                    } else {
+                        colorSessionProfit -= (parseFloat(document.getElementById('colorBaseBet').value) || 0.20) * Math.pow(2, colorMartingaleLevel - 1);
+                        colorLosses++;
+                        colorLossStreak++;
+                        strategies[currentStrategy].lossStreak++;
+                        colorMartingaleLevel++;
+                    }
+                }
+                
+                tempHistory.push(savedHistory[i]);
+                history = savedHistory;
+            }
+        }
+
+        function endSession() {
+            const msg = currentLang === 'vi' ? 'Phiên kết thúc.' : 'Session ended.';
+            showStatus(msg, true);
+            
+            currentColorPrediction = null;
+            document.getElementById('colorBettingBox').style.display = 'none';
+            document.getElementById('colorPredictionDisplay').style.display = 'none';
+            document.getElementById('strategyPanel').style.display = 'none';
+            updateDisplay();
+        }
+
+        function resetSystem() {
+            const confirmMsg = currentLang === 'vi' ? 'Đặt lại tất cả?' : 'Reset everything?';
+            
+            if (!confirm(confirmMsg)) return;
+            
+            history = [];
+            currentNumber = null;
+            colorMartingaleLevel = 1;
+            colorSessionProfit = 0;
+            colorWins = 0;
+            colorLosses = 0;
+            colorLossStreak = 0;
+            currentColorPrediction = null;
+            
+            // Reset strategies
+            currentStrategy = 'history';
+            Object.keys(strategies).forEach(key => {
+                strategies[key].lossStreak = 0;
+                strategies[key].active = (key === 'history');
+            });
+            
+            updateDisplay();
+        }
+
+        function showStatus(message, isWin) {
+            const banner = document.getElementById('statusBanner');
+            banner.className = 'status-banner ' + (isWin ? 'win' : 'loss');
+            banner.innerHTML = message;
+            setTimeout(() => banner.className = 'status-banner', 4000);
+        }
+
+        function updateDisplay() {
+            const grid = document.getElementById('historyGrid');
+            document.getElementById('historyCount').textContent = history.length;
+            
+            if (history.length === 0) {
+                const noDataText = currentLang === 'vi' ? 'Không có dữ liệu' : 'No data';
+                grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">${noDataText}</div>`;
+                document.getElementById('colorBettingBox').style.display = 'none';
+                document.getElementById('colorPredictionDisplay').style.display = 'none';
+                document.getElementById('colorStatsGrid').style.display = 'none';
+                document.getElementById('patternDisplay').style.display = 'none';
+                document.getElementById('strategyPanel').style.display = 'none';
+                return;
+            }
+
+            updateColorDisplay();
+
+            grid.innerHTML = '';
+            const displayHistory = history.slice().reverse().slice(0, 48);
+            
+            displayHistory.forEach((entry, idx) => {
+                const div = document.createElement('div');
+                const isLatest = idx === 0;
+                const isRed = redNumbers.includes(entry.num);
+                const isZero = entry.num === 0;
+                
+                let colorClass = '';
+                let colorIndicator = '';
+                if (isZero) {
+                    colorClass = 'zero-spin';
+                    colorIndicator = '0';
+                } else if (isRed) {
+                    colorClass = 'red-spin';
+                    colorIndicator = 'R';
+                } else {
+                    colorClass = 'black-spin';
+                    colorIndicator = 'B';
+                }
+                
+                div.className = 'history-item ' + (isLatest ? 'latest ' : '') + colorClass;
+                
+                div.innerHTML = `
+                    <div class="history-number">${entry.num}</div>
+                    <div class="history-color" style="color: ${isRed ? '#ff6b6b' : isZero ? '#2ecc71' : '#fff'}">${colorIndicator}</div>
+                `;
+                
+                grid.appendChild(div);
+            });
+
+            updatePatternAnalysis();
+        }
+
+        function updatePatternAnalysis() {
+            const container = document.getElementById('patternStats');
+            if (history.length === 0) {
+                const msg = currentLang === 'vi' ? 'Nhập số để xem mẫu' : 'Enter numbers to see patterns';
+                container.innerHTML = `<div class="empty-state">${msg}</div>`;
+                return;
+            }
+            
+            const lastEntry = history[history.length - 1];
+            const target = lastEntry.num;
+            
+            let html = '<div style="font-size: 0.85rem; margin-bottom: 10px; color: var(--text-secondary);">';
+            const lastText = currentLang === 'vi' ? 'Cuối' : 'Last';
+            const colorText = redNumbers.includes(target) ? 
+                (currentLang === 'vi' ? 'Đỏ' : 'Red') : 
+                target === 0 ? 'Green' : 
+                (currentLang === 'vi' ? 'Đen' : 'Black');
+            html += `${lastText}: <strong>${target}</strong> (${colorText})`;
+            html += '</div>';
+            
+            // Show all three strategy predictions
+            const allPreds = analyzeAllStrategies();
+            
+            html += '<div style="margin-top: 15px; font-size: 0.8rem; color: var(--accent-gold); font-weight: bold;">All Strategies:</div>';
+            html += '<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">';
+            
+            const stratNames = {
+                history: currentLang === 'vi' ? 'Lịch sử' : 'History',
+                evenodd: currentLang === 'vi' ? 'Chẵn/Lẻ' : 'Even/Odd',
+                pattern: currentLang === 'vi' ? 'Mẫu' : 'Pattern'
+            };
+            
+            ['history', 'evenodd', 'pattern'].forEach(strat => {
+                const pred = allPreds[strat];
+                const isActive = strat === currentStrategy;
+                const streak = strategies[strat].lossStreak;
+                
+                if (pred) {
+                    const borderColor = pred.color === 'red' ? '#ff6b6b' : '#fff';
+                    html += `
+                        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; border-left: 3px solid ${borderColor}; ${isActive ? 'background: rgba(212,175,55,0.1); border: 1px solid var(--accent-gold);' : ''}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: bold; ${isActive ? 'color: var(--accent-gold);' : ''}">${stratNames[strat]} ${isActive ? '★' : ''}</span>
+                                <span style="color: ${borderColor}; font-weight: bold;">${pred.color === 'red' ? (currentLang === 'vi' ? 'Đỏ' : 'Red') : (currentLang === 'vi' ? 'Đen' : 'Black')} (${pred.confidence}%)</span>
+                            </div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">${pred.reason}</div>
+                            <div style="font-size: 0.7rem; color: ${streak >= 2 ? '#e74c3c' : '#2ecc71'}; margin-top: 2px;">${currentLang === 'vi' ? 'Chuỗi thua' : 'Loss streak'}: ${streak}</div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; opacity: 0.5;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>${stratNames[strat]}</span>
+                                <span>${currentLang === 'vi' ? 'Không đủ dữ liệu' : 'No data'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            
+            // Show historical followers for this number
+            const followers = {};
+            for (let i = 0; i < history.length - 1; i++) {
+                if (history[i].num === target) {
+                    const next = history[i + 1].num;
+                    const color = next === 0 ? 'Green' : redNumbers.includes(next) ? 
+                        (currentLang === 'vi' ? 'Đỏ' : 'Red') : 
+                        (currentLang === 'vi' ? 'Đen' : 'Black');
+                    followers[color] = (followers[color] || 0) + 1;
+                }
+            }
+            
+            if (Object.keys(followers).length > 0) {
+                const afterText = currentLang === 'vi' ? 'Sau số này:' : 'After this number:';
+                html += `<div style="margin-top: 15px; font-size: 0.8rem; color: var(--accent-gold);">${afterText}</div>`;
+                html += '<div style="display: flex; gap: 10px; margin-top: 5px;">';
+                for (const [color, count] of Object.entries(followers)) {
+                    const colorCode = color === (currentLang === 'vi' ? 'Đỏ' : 'Red') ? '#ff6b6b' : color === (currentLang === 'vi' ? 'Đen' : 'Black') ? '#fff' : '#2ecc71';
+                    html += `<div style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; border-left: 3px solid ${colorCode};">
+                        <span style="color: ${colorCode}; font-weight: bold;">${color}:</span> ${count}
+                    </div>`;
+                }
+                html += '</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        document.getElementById('numberInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') addNumber();
+        });
+
+        init();
+    </script>
+</body>
+</html>

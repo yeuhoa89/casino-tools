@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="appTitle">Roulette Sequence Analyst | Directional Tracking</title>
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #151b2d;
+            --bg-glass: rgba(21, 27, 45, 0.95);
+            --accent-gold: #d4af37;
+            --accent-green: #2ecc71;
+            --accent-red: #e74c3c;
+            --tier1-color: #ffd700;
+            --tier2-color: #c0c0c0;
+            --tier3-color: #cd7f32;
+            --tier4-color: #9b59b6;
+            --text-primary: #e6e9f0;
+            --text-secondary: #8b92a8;
+            --accent-blue: #3498db;
+            --paypal-blue: #0070ba;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: radial-gradient(ellipse at top, #1a1f3a 0%, #0a0e1a 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent-gold), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+
+        .language-selector {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--text-secondary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr 400px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .language-selector {
+                position: static;
+                transform: none;
+                justify-content: center;
+                margin-top: 10px;
+            }
+        }
+
+        .panel {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .panel-title {
+            color: var(--accent-gold);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 1px;
+        }
+
+        .status-banner {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .status-banner.win {
+            display: block;
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .status-banner.loss {
+            display: block;
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .current-display-box {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .current-label-top {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+
+        .current-number-large {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        .current-direction-badge {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 4px 12px;
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid var(--accent-gold);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--accent-gold);
+            font-weight: bold;
+        }
+
+        .direction-selector {
+            background: rgba(52, 152, 219, 0.1);
+            border: 2px solid var(--accent-blue);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .direction-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .direction-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .dir-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 1.1rem;
+        }
+
+        .dir-btn:hover {
+            border-color: var(--accent-gold);
+            background: rgba(212, 175, 55, 0.1);
+        }
+
+        .dir-btn.active-left {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+        }
+
+        .dir-btn.active-right {
+            background: rgba(46, 204, 113, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+        }
+
+        .next-direction-hint {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .middle-numbers-banner {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--tier4-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .middle-numbers-title {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .middle-numbers-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .middle-number-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .middle-number-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .middle-number-value {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            border: 3px solid;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .middle-number-value.tier1 { 
+            border-color: var(--tier1-color); 
+            color: var(--tier1-color);
+            box-shadow: 0 0 15px var(--tier1-color);
+        }
+        .middle-number-value.tier2 { 
+            border-color: var(--tier2-color); 
+            color: var(--tier2-color);
+            box-shadow: 0 0 15px var(--tier2-color);
+        }
+        .middle-number-value.tier3 { 
+            border-color: var(--tier3-color); 
+            color: var(--tier3-color);
+            box-shadow: 0 0 15px var(--tier3-color);
+        }
+        .middle-number-value.tier4 { 
+            border-color: var(--tier4-color); 
+            color: var(--tier4-color);
+            box-shadow: 0 0 15px var(--tier4-color);
+        }
+
+        .middle-numbers-separator {
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+        }
+
+        .middle-numbers-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+
+        .racetrack-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .racetrack-title {
+            text-align: center;
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .racetrack {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: #0a0a0a;
+            border-radius: 100px;
+            border: 3px solid #333;
+            overflow: visible;
+        }
+
+        .wheel-number {
+            position: absolute;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            z-index: 5;
+            cursor: pointer;
+        }
+
+        .wheel-number.red {
+            background: #c41e3a;
+            color: white;
+        }
+
+        .wheel-number.black {
+            background: #1a1a1a;
+            color: white;
+            border-color: #444;
+        }
+
+        .wheel-number.green {
+            background: var(--accent-green);
+            color: #000;
+        }
+
+        .wheel-number.tier1 {
+            background: var(--tier1-color) !important;
+            color: #000 !important;
+            box-shadow: 0 0 25px var(--tier1-color), inset 0 0 15px rgba(255, 255, 255, 0.5);
+            border-color: #fff;
+            transform: scale(1.25);
+            z-index: 10;
+            animation: pulse-gold 1.2s infinite;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .wheel-number.tier2 {
+            background: var(--tier2-color) !important;
+            color: #000 !important;
+            box-shadow: 0 0 20px var(--tier2-color), inset 0 0 10px rgba(255, 255, 255, 0.4);
+            border-color: #fff;
+            transform: scale(1.15);
+            z-index: 9;
+            animation: pulse-silver 1.4s infinite;
+            font-weight: bold;
+        }
+
+        .wheel-number.tier3 {
+            background: var(--tier3-color) !important;
+            color: #fff !important;
+            box-shadow: 0 0 15px var(--tier3-color), inset 0 0 8px rgba(255, 255, 255, 0.3);
+            border-color: #fff;
+            transform: scale(1.1);
+            z-index: 8;
+            animation: pulse-bronze 1.6s infinite;
+            font-weight: bold;
+        }
+
+        .wheel-number.tier4 {
+            background: var(--tier4-color) !important;
+            color: #fff !important;
+            box-shadow: 0 0 15px var(--tier4-color), inset 0 0 8px rgba(255, 255, 255, 0.3);
+            border-color: #fff;
+            transform: scale(1.1);
+            z-index: 7;
+            animation: pulse-purple 1.8s infinite;
+            font-weight: bold;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 25px var(--tier1-color), inset 0 0 15px rgba(255, 255, 255, 0.5); transform: scale(1.25); }
+            50% { box-shadow: 0 0 40px var(--tier1-color), inset 0 0 20px rgba(255, 255, 255, 0.8); transform: scale(1.35); }
+        }
+
+        @keyframes pulse-silver {
+            0%, 100% { box-shadow: 0 0 20px var(--tier2-color), inset 0 0 10px rgba(255, 255, 255, 0.4); transform: scale(1.15); }
+            50% { box-shadow: 0 0 30px var(--tier2-color), inset 0 0 15px rgba(255, 255, 255, 0.6); transform: scale(1.22); }
+        }
+
+        @keyframes pulse-bronze {
+            0%, 100% { box-shadow: 0 0 15px var(--tier3-color), inset 0 0 8px rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+            50% { box-shadow: 0 0 25px var(--tier3-color), inset 0 0 12px rgba(255, 255, 255, 0.5); transform: scale(1.18); }
+        }
+
+        @keyframes pulse-purple {
+            0%, 100% { box-shadow: 0 0 15px var(--tier4-color), inset 0 0 8px rgba(255, 255, 255, 0.3); transform: scale(1.1); }
+            50% { box-shadow: 0 0 25px var(--tier4-color), inset 0 0 12px rgba(255, 255, 255, 0.5); transform: scale(1.18); }
+        }
+
+        .racetrack-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+            font-size: 0.8rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid;
+            box-shadow: 0 0 8px;
+        }
+
+        .legend-dot.tier1 { 
+            background: var(--tier1-color); 
+            border-color: #fff; 
+            box-shadow: 0 0 8px var(--tier1-color);
+        }
+        .legend-dot.tier2 { 
+            background: var(--tier2-color); 
+            border-color: #fff; 
+            box-shadow: 0 0 6px var(--tier2-color);
+        }
+        .legend-dot.tier3 { 
+            background: var(--tier3-color); 
+            border-color: #fff; 
+            box-shadow: 0 0 6px var(--tier3-color);
+        }
+        .legend-dot.tier4 { 
+            background: var(--tier4-color); 
+            border-color: #fff; 
+            box-shadow: 0 0 6px var(--tier4-color);
+        }
+
+        .roulette-table-container {
+            background: #0d5c3b;
+            border-radius: 8px;
+            padding: 8px;
+            border: 3px solid #c4a35a;
+        }
+
+        .roulette-table {
+            display: grid;
+            grid-template-columns: 50px repeat(12, 1fr);
+            grid-template-rows: repeat(3, 45px);
+            gap: 2px;
+            background: #0d5c3b;
+        }
+
+        .table-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+        }
+
+        .table-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .cell-zero {
+            grid-row: 1 / span 3;
+            grid-column: 1;
+            background: var(--accent-green);
+            color: #000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .cell-red {
+            background: #c41e3a;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .cell-black {
+            background: #1a1a1a;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .cell-red.tier1, .cell-black.tier1 {
+            box-shadow: 0 0 15px var(--tier1-color), inset 0 0 10px var(--tier1-color);
+            border: 2px solid var(--tier1-color);
+            z-index: 5;
+        }
+
+        .cell-red.tier2, .cell-black.tier2 {
+            box-shadow: 0 0 12px var(--tier2-color), inset 0 0 8px var(--tier2-color);
+            border: 2px solid var(--tier2-color);
+            z-index: 5;
+        }
+
+        .cell-red.tier3, .cell-black.tier3 {
+            box-shadow: 0 0 10px var(--tier3-color), inset 0 0 6px var(--tier3-color);
+            border: 2px solid var(--tier3-color);
+            z-index: 5;
+        }
+
+        .cell-red.tier4, .cell-black.tier4 {
+            box-shadow: 0 0 10px var(--tier4-color), inset 0 0 6px var(--tier4-color);
+            border: 2px solid var(--tier4-color);
+            z-index: 5;
+        }
+
+        .betting-box {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .betting-box-title {
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .base-bet-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .base-bet-control label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .base-bet-input {
+            width: 80px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .martingale-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .martingale-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+        }
+
+        .martingale-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .martingale-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        .all-tiers {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tier-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .tier-row.tier-1 {
+            border-left-color: var(--tier1-color);
+            background: rgba(255, 215, 0, 0.15);
+        }
+
+        .tier-row.tier-2 {
+            border-left-color: var(--tier2-color);
+            background: rgba(192, 192, 192, 0.15);
+        }
+
+        .tier-row.tier-3 {
+            border-left-color: var(--tier3-color);
+            background: rgba(205, 127, 50, 0.15);
+        }
+
+        .tier-row.tier-4 {
+            border-left-color: var(--tier4-color);
+            background: rgba(155, 89, 182, 0.15);
+        }
+
+        .tier-info-left {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .tier-name {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .tier-name.t1 { color: var(--tier1-color); }
+        .tier-name.t2 { color: var(--tier2-color); }
+        .tier-name.t3 { color: var(--tier3-color); }
+        .tier-name.t4 { color: var(--tier4-color); }
+
+        .tier-follower {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .tier-numbers-list {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .tier-num {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 2px solid;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .tier-num.t1 { border-color: var(--tier1-color); color: var(--tier1-color); }
+        .tier-num.t2 { border-color: var(--tier2-color); color: var(--tier2-color); }
+        .tier-num.t3 { border-color: var(--tier3-color); color: var(--tier3-color); }
+        .tier-num.t4 { border-color: var(--tier4-color); color: var(--tier4-color); }
+        .tier-num.hit { background: var(--accent-green); color: #000; border-color: var(--accent-green); }
+
+        .tier-cost-right {
+            text-align: right;
+        }
+
+        .tier-bet-amount {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        .tier-num-count {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .total-exposure {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(212, 175, 55, 0.2);
+            border-radius: 8px;
+            border: 2px solid var(--accent-gold);
+            margin-top: 10px;
+        }
+
+        .exposure-label {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .exposure-amount {
+            color: var(--accent-gold);
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .session-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+        }
+
+        .stat-box-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-box-value {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .stat-box-value.profit { color: var(--accent-green); }
+        .stat-box-value.loss { color: var(--accent-red); }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .history-item {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid var(--accent-gold);
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: var(--accent-gold);
+            position: relative;
+            padding: 2px;
+        }
+
+        .history-item.latest {
+            background: var(--accent-gold);
+            color: #000;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+        }
+
+        .history-number {
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+
+        .history-direction {
+            font-size: 0.6rem;
+            line-height: 1;
+            margin-top: 1px;
+            opacity: 0.8;
+        }
+
+        .history-item.left-spin {
+            border-color: var(--accent-red);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .history-item.right-spin {
+            border-color: var(--accent-green);
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input[type="number"] {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(212, 175, 55, 0.4);
+            color: var(--accent-gold);
+            padding: 12px;
+            font-size: 1.2rem;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-gold), #b8941f);
+            border: none;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .btn-danger:hover {
+            background: rgba(231, 76, 60, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .controls .btn {
+            flex: 1;
+            font-size: 0.85rem;
+            padding: 10px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 30px;
+            font-style: italic;
+        }
+
+        .disclaimer {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 3px solid var(--accent-red);
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .direction-legend {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .direction-legend span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-gold);
+            border-radius: 3px;
+        }
+
+        /* Donation Section Styles */
+        .donation-section {
+            max-width: 1400px;
+            margin: 40px auto 20px;
+            text-align: center;
+        }
+
+        .donation-box {
+            background: linear-gradient(135deg, rgba(0, 112, 186, 0.1), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--paypal-blue);
+            border-radius: 16px;
+            padding: 30px;
+            display: inline-block;
+            box-shadow: 0 8px 32px rgba(0, 112, 186, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .donation-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 112, 186, 0.3);
+            border-color: #009cde;
+        }
+
+        .donation-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .donation-title {
+            color: var(--accent-gold);
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .donation-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        .paypal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #0070ba, #005ea6);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0, 112, 186, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .paypal-btn:hover {
+            background: linear-gradient(135deg, #009cde, #0070ba);
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(0, 156, 222, 0.6);
+        }
+
+        .paypal-email {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 15px;
+            opacity: 0.8;
+            font-family: monospace;
+        }
+
+        .heart-beat {
+            display: inline-block;
+            animation: heartbeat 1.5s ease infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 data-i18n="appTitle">ROULETTE SEQUENCE ANALYST</h1>
+            <p class="subtitle" data-i18n="subtitle">Directional Tracking • 4 Tiers • Multi-Language</p>
+            <div class="language-selector">
+                <button class="lang-btn active" onclick="changeLanguage('en')">English</button>
+                <button class="lang-btn" onclick="changeLanguage('sv')">Svenska</button>
+                <button class="lang-btn" onclick="changeLanguage('fi')">Suomi</button>
+                <button class="lang-btn" onclick="changeLanguage('vi')">Tiếng Việt</button>
+            </div>
+        </header>
+
+        <div class="disclaimer">
+            <span data-i18n="disclaimer">Directional Mode: Select spin direction for first spin. System auto-alternates. Tier 1-4 each show 3 numbers. Predictions separate for Left/Right history.</span>
+        </div>
+
+        <div id="statusBanner" class="status-banner"></div>
+
+        <div class="main-grid">
+            <!-- Left Column -->
+            <div class="left-col">
+                <div class="current-display-box" id="currentDisplayBox" style="display: none;">
+                    <div class="current-label-top" data-i18n="currentNumber">Current Number</div>
+                    <div class="current-number-large" id="currentNumberDisplay">-</div>
+                    <div class="current-direction-badge" id="currentDirectionBadge">-</div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">🔄 <span data-i18n="spinDirection">Spin Direction</span></div>
+                    <div id="directionSelector" class="direction-selector">
+                        <div class="direction-label" data-i18n="selectFirstDirection">Select First Spin Direction</div>
+                        <div class="direction-buttons">
+                            <button class="dir-btn" onclick="setDirection('left')" title="Counter-Clockwise">← <span data-i18n="left">Left</span></button>
+                            <button class="dir-btn" onclick="setDirection('right')" title="Clockwise"><span data-i18n="right">Right</span> →</button>
+                        </div>
+                    </div>
+                    <div id="activeDirectionDisplay" style="display: none; margin-bottom: 15px;">
+                        <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 4px;" data-i18n="nextSpinWillBe">Next Spin Will Be:</div>
+                            <div id="nextDirectionArrow" style="font-size: 1.3rem; font-weight: bold; color: var(--accent-gold);"></div>
+                            <div class="next-direction-hint" data-i18n="autoAlternating">(Auto-alternating)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 15px;">
+                    <div class="panel-title">📥 <span data-i18n="importData">Import Data</span></div>
+                    <div id="importDirectionHint" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 8px; display: none;">
+                        <span data-i18n="startingDirection">Starting direction:</span> <span id="importStartDir" style="color: var(--accent-gold); font-weight: bold;">-</span>
+                    </div>
+                    <textarea id="bulkInput" data-i18n-placeholder="importPlaceholder" placeholder="Paste numbers (comma or newline separated)"></textarea>
+                    <button class="btn" onclick="importFromText()" style="width: 100%;" data-i18n="importButton">Import & Auto-Alternate</button>
+                </div>
+
+                <div class="panel" style="margin-top: 15px;">
+                    <div class="panel-title">⌨️ <span data-i18n="nextSpinResult">Next Spin Result</span></div>
+                    <div class="input-row">
+                        <input type="number" id="numberInput" min="0" max="36" data-i18n-placeholder="enterNumber" placeholder="Enter number">
+                        <button class="btn" onclick="addNumber()" data-i18n="spin">Spin</button>
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-secondary" onclick="undoLast()" data-i18n="undo">Undo</button>
+                        <button class="btn btn-danger" onclick="endSession()" data-i18n="endSession">End</button>
+                        <button class="btn btn-secondary" onclick="resetSystem()" data-i18n="resetAll">Reset</button>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 15px;">
+                    <div class="panel-title">📜 <span data-i18n="history">History</span> (<span id="historyCount">0</span>)</div>
+                    <div class="history-grid" id="historyGrid">
+                        <div class="empty-state" style="grid-column: 1/-1;" data-i18n="noData">No data</div>
+                    </div>
+                    <div class="direction-legend">
+                        <span style="color: var(--accent-red);">← <span data-i18n="leftShort">Left</span> (CCW)</span>
+                        <span style="color: var(--accent-green);"><span data-i18n="rightShort">Right</span> → (CW)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Column -->
+            <div class="center-col">
+                <div class="racetrack-container" id="racetrackContainer" style="display: none;">
+                    <div class="racetrack-title">🎯 <span data-i18n="wheelView">Wheel View</span> - <span data-i18n="allTiers">All 4 Tiers</span></div>
+                    <div class="racetrack" id="racetrack"></div>
+                    <div class="racetrack-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot tier1"></div>
+                            <span>T1</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot tier2"></div>
+                            <span>T2</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot tier3"></div>
+                            <span>T3</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot tier4"></div>
+                            <span>T4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="middle-numbers-banner" id="middleNumbersBanner" style="display: none;">
+                    <div class="middle-numbers-title" data-i18n="tierCenters">TIER CENTER NUMBERS</div>
+                    <div class="middle-numbers-container" id="middleNumbersContainer">
+                        <div class="middle-number-item">
+                            <div class="middle-number-value tier1" id="middleT1">-</div>
+                            <div class="middle-number-label tier1" data-i18n="tier1Short">TIER 1</div>
+                        </div>
+                        <div class="middle-numbers-separator">|</div>
+                        <div class="middle-number-item">
+                            <div class="middle-number-value tier2" id="middleT2">-</div>
+                            <div class="middle-number-label tier2" data-i18n="tier2Short">TIER 2</div>
+                        </div>
+                        <div class="middle-numbers-separator">|</div>
+                        <div class="middle-number-item">
+                            <div class="middle-number-value tier3" id="middleT3">-</div>
+                            <div class="middle-number-label tier3" data-i18n="tier3Short">TIER 3</div>
+                        </div>
+                        <div class="middle-numbers-separator">|</div>
+                        <div class="middle-number-item">
+                            <div class="middle-number-value tier4" id="middleT4">-</div>
+                            <div class="middle-number-label tier4" data-i18n="tier4Short">TIER 4</div>
+                        </div>
+                    </div>
+                    <div class="middle-numbers-summary" id="middleSummary">- - - -</div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">🎰 <span data-i18n="bettingTable">Betting Table</span></div>
+                    <div class="roulette-table-container">
+                        <div class="roulette-table" id="rouletteTable"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-col">
+                <div class="betting-box" id="bettingBox" style="display: none;">
+                    <div class="betting-box-title">💰 <span data-i18n="allTiersTitle">All 4 Betting Tiers</span></div>
+                    
+                    <div class="base-bet-control">
+                        <label data-i18n="baseBet">Base Bet:</label>
+                        <input type="number" class="base-bet-input" id="baseBet" value="0.10" min="0.01" step="0.01" onchange="updateAllTiers()">
+                        <button class="btn" onclick="resetMartingale()" style="padding: 8px 12px; font-size: 0.8rem;" data-i18n="reset">Reset</button>
+                    </div>
+
+                    <div class="martingale-display">
+                        <div class="martingale-item">
+                            <div class="martingale-label" data-i18n="level">Level</div>
+                            <div class="martingale-value" id="martingaleLevel">1x</div>
+                        </div>
+                        <div class="martingale-item">
+                            <div class="martingale-label" data-i18n="unitBet">Unit Bet</div>
+                            <div class="martingale-value" id="unitBet">$0.10</div>
+                        </div>
+                        <div class="martingale-item">
+                            <div class="martingale-label" data-i18n="totalRisk">Total Risk</div>
+                            <div class="martingale-value" id="totalRisk">$1.20</div>
+                        </div>
+                    </div>
+
+                    <div class="all-tiers" id="allTiers"></div>
+
+                    <div class="total-exposure">
+                        <span class="exposure-label" data-i18n="totalExposure">Total Exposure:</span>
+                        <span class="exposure-amount" id="totalExposure">$1.20</span>
+                    </div>
+
+                    <div class="session-stats">
+                        <div class="stat-box">
+                            <div class="stat-box-label" data-i18n="sessionPL">Session P/L</div>
+                            <div class="stat-box-value" id="sessionProfit">$0.00</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-box-label" data-i18n="lossStreak">Loss Streak</div>
+                            <div class="stat-box-value" id="lossStreak">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">📊 <span data-i18n="patternAnalysis">Pattern Analysis</span></div>
+                    <div id="patternStats">
+                        <div class="empty-state" data-i18n="enterNumbersPattern">Enter numbers to see patterns</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Donation Section -->
+    <div class="donation-section">
+        <div class="donation-box">
+            <span class="donation-icon">☕</span>
+            <div class="donation-title">Buy me a coffee <span class="heart-beat">❤️</span></div>
+            <div class="donation-text">
+                If this tool helped you win,<br>
+                consider supporting development!
+            </div>
+            <a href="https://www.paypal.com/donate?business=saftblandar@gmail.com&currency_code=USD" 
+               target="_blank" 
+               class="paypal-btn">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white" style="margin-right: 8px;">
+                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.59 3.025-2.566 6.082-8.558 6.082H9.63l-1.496 9.478h2.79c.457 0 .85-.334.922-.788.022-.087.045-.176.066-.264.156-.798.324-1.624.486-2.446.047-.254.092-.51.139-.764.073-.399.45-.692.906-.692h.45c4.116 0 7.334-1.674 8.275-6.17.274-1.41.177-2.587-.443-3.449z"/>
+                </svg>
+                Support via PayPal
+            </a>
+            <div class="paypal-email">❤️❤️❤️</div>
+        </div>
+    </div>
+
+    <script>
+        // European wheel order
+        const wheelOrder = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+        
+        const redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+        
+        const tableColumns = [
+            [3, 6, 9],
+            [12, 15, 18],
+            [21, 24, 27],
+            [30, 33, 36],
+            [2, 5, 8],
+            [11, 14, 17],
+            [20, 23, 26],
+            [29, 32, 35],
+            [1, 4, 7],
+            [10, 13, 16],
+            [19, 22, 25],
+            [28, 31, 34]
+        ];
+
+        let history = [];
+        let currentNumber = null;
+        let currentDirection = null;
+        let martingaleLevel = 1;
+        let currentRecommendations = [];
+        let sessionProfit = 0;
+        let lossStreak = 0;
+        let lastTotalBet = 0;
+        let currentLang = 'en';
+
+        const translations = {
+            en: {
+                appTitle: "ROULETTE SEQUENCE ANALYST",
+                subtitle: "Directional Tracking • 4 Tiers • Multi-Language",
+                disclaimer: "Directional Mode: Select spin direction for first spin. System auto-alternates. Tier 1-4 each show 3 numbers. Predictions separate for Left/Right history.",
+                currentNumber: "Current Number",
+                spinDirection: "Spin Direction",
+                selectFirstDirection: "Select First Spin Direction",
+                left: "Left",
+                right: "Right",
+                nextSpinWillBe: "Next Spin Will Be:",
+                autoAlternating: "(Auto-alternating)",
+                importData: "Import Data",
+                startingDirection: "Starting direction:",
+                importPlaceholder: "Paste numbers (comma or newline separated)",
+                importButton: "Import & Auto-Alternate",
+                nextSpinResult: "Next Spin Result",
+                enterNumber: "Enter number",
+                spin: "Spin",
+                undo: "Undo",
+                endSession: "End",
+                resetAll: "Reset",
+                history: "History",
+                noData: "No data",
+                leftShort: "Left",
+                rightShort: "Right",
+                wheelView: "Wheel View",
+                allTiers: "All 4 Tiers",
+                bettingTable: "Betting Table",
+                tierCenters: "TIER CENTER NUMBERS",
+                tier1Short: "TIER 1",
+                tier2Short: "TIER 2",
+                tier3Short: "TIER 3",
+                tier4Short: "TIER 4",
+                allTiersTitle: "All 4 Betting Tiers",
+                baseBet: "Base Bet:",
+                reset: "Reset",
+                level: "Level",
+                unitBet: "Unit Bet",
+                totalRisk: "Total Risk",
+                totalExposure: "Total Exposure:",
+                sessionPL: "Session P/L",
+                lossStreak: "Loss Streak",
+                patternAnalysis: "Pattern Analysis",
+                enterNumbersPattern: "Enter numbers to see patterns"
+            },
+            sv: {
+                appTitle: "ROULETTSEKVENSANALYTIKER",
+                subtitle: "Riktningsspårning • 4 Nivåer • Flerspråkig",
+                disclaimer: "Riktningsläge: Välj snurrikning för första snurren. Systemet växlar automatiskt. Nivå 1-4 visar 3 nummer var. Förutsägelser separat för Vänster/Höger-historik.",
+                currentNumber: "Nuvarande Nummer",
+                spinDirection: "Snurrikning",
+                selectFirstDirection: "Välj Första Snurrikning",
+                left: "Vänster",
+                right: "Höger",
+                nextSpinWillBe: "Nästa Snurr Blir:",
+                autoAlternating: "(Växlar automatiskt)",
+                importData: "Importera Data",
+                startingDirection: "Startrikning:",
+                importPlaceholder: "Klistra in nummer (komma eller ny rad separerade)",
+                importButton: "Importera & Växla Automatiskt",
+                nextSpinResult: "Nästa Snurrresultat",
+                enterNumber: "Ange nummer",
+                spin: "Snurra",
+                undo: "Ångra",
+                endSession: "Avsluta",
+                resetAll: "Återställ",
+                history: "Historik",
+                noData: "Ingen data",
+                leftShort: "Vänster",
+                rightShort: "Höger",
+                wheelView: "Hjulvy",
+                allTiers: "Alla 4 Nivåer",
+                bettingTable: "Bettingbord",
+                tierCenters: "CENTRUMNUMMER FÖR NIVÅER",
+                tier1Short: "NIVÅ 1",
+                tier2Short: "NIVÅ 2",
+                tier3Short: "NIVÅ 3",
+                tier4Short: "NIVÅ 4",
+                allTiersTitle: "Alla 4 Bettingnivåer",
+                baseBet: "Basinsats:",
+                reset: "Återställ",
+                level: "Nivå",
+                unitBet: "Enhetsinsats",
+                totalRisk: "Total Risk",
+                totalExposure: "Total Exponering:",
+                sessionPL: "Session V/F",
+                lossStreak: "Förlustserie",
+                patternAnalysis: "Mönsteranalys",
+                enterNumbersPattern: "Ange nummer för att se mönster"
+            },
+            fi: {
+                appTitle: "RULETTISARJA-ANALYYTIKKO",
+                subtitle: "Suuntaseuranta • 4 Tasoa • Monikielinen",
+                disclaimer: "Suuntatila: Valitse pyörityssuunta ensimmäiselle pyöritykselle. Järjestelmä vaihtaa automaattisesti. Tasot 1-4 näyttävät 3 numeroa. Ennusteet erikseen Vasen/Oikea-historialle.",
+                currentNumber: "Nykyinen Numero",
+                spinDirection: "Pyörityssuunta",
+                selectFirstDirection: "Valitse Ensimmäinen Pyörityssuunta",
+                left: "Vasen",
+                right: "Oikea",
+                nextSpinWillBe: "Seuraava Pyöritys On:",
+                autoAlternating: "(Vaihtaa automaattisesti)",
+                importData: "Tuo Data",
+                startingDirection: "Aloitussuunta:",
+                importPlaceholder: "Liitä numerot (pilkuilla tai rivinvaihdoilla eroteltu)",
+                importButton: "Tuo & Vaihda Automattisesti",
+                nextSpinResult: "Seuraava Pyöritystulos",
+                enterNumber: "Syötä numero",
+                spin: "Pyöräytä",
+                undo: "Kumoa",
+                endSession: "Lopeta",
+                resetAll: "Nollaa",
+                history: "Historia",
+                noData: "Ei dataa",
+                leftShort: "Vasen",
+                rightShort: "Oikea",
+                wheelView: "Pyöränäkymä",
+                allTiers: "Kaikki 4 Tasoa",
+                bettingTable: "Panostuspöytä",
+                tierCenters: "TASOJEN KESKUSNUMEROT",
+                tier1Short: "TASO 1",
+                tier2Short: "TASO 2",
+                tier3Short: "TASO 3",
+                tier4Short: "TASO 4",
+                allTiersTitle: "Kaikki 4 Panostustasoa",
+                baseBet: "Peruspanos:",
+                reset: "Nollaa",
+                level: "Taso",
+                unitBet: "Yksikköpanos",
+                totalRisk: "Kokonaisriski",
+                totalExposure: "Kokonaisaltistus:",
+                sessionPL: "Istunto V/T",
+                lossStreak: "Häviöputki",
+                patternAnalysis: "Kuvioanalyysi",
+                enterNumbersPattern: "Syötä numeroita nähdäksesi kuviot"
+            },
+            vi: {
+                appTitle: "NHÀ PHÂN TÍCH CHUỖI ROULETTE",
+                subtitle: "Theo Dõi Hướng • 4 Cấp Độ • Đa Ngôn Ngữ",
+                disclaimer: "Chế độ Hướng: Chọn hướng quay cho lần quay đầu. Hệ thống tự động xen kẽ. Cấp 1-4 mỗi cấp hiển thị 3 số. Dự đoán riêng cho lịch sử Trái/Phải.",
+                currentNumber: "Số Hiện Tại",
+                spinDirection: "Hướng Quay",
+                selectFirstDirection: "Chọn Hướng Quay Đầu Tiên",
+                left: "Trái",
+                right: "Phải",
+                nextSpinWillBe: "Lần Quay Tiếp Là:",
+                autoAlternating: "(Tự động xen kẽ)",
+                importData: "Nhập Dữ Liệu",
+                startingDirection: "Hướng bắt đầu:",
+                importPlaceholder: "Dán số (phân cách bằng dấu phẩy hoặc xuống dòng)",
+                importButton: "Nhập & Tự Động Xen Kẽ",
+                nextSpinResult: "Kết Quả Lần Quay Tiếp",
+                enterNumber: "Nhập số",
+                spin: "Quay",
+                undo: "Hoàn tác",
+                endSession: "Kết thúc",
+                resetAll: "Đặt lại",
+                history: "Lịch sử",
+                noData: "Không có dữ liệu",
+                leftShort: "Trái",
+                rightShort: "Phải",
+                wheelView: "Xem Bánh Xe",
+                allTiers: "Cả 4 Cấp Độ",
+                bettingTable: "Bàn Cược",
+                tierCenters: "SỐ TRUNG TÂM CÁC CẤP",
+                tier1Short: "CẤP 1",
+                tier2Short: "CẤP 2",
+                tier3Short: "CẤP 3",
+                tier4Short: "CẤP 4",
+                allTiersTitle: "Cả 4 Cấp Độ Cược",
+                baseBet: "Cược Cơ Bản:",
+                reset: "Đặt lại",
+                level: "Cấp",
+                unitBet: "Cược Đơn vị",
+                totalRisk: "Rủi Ro Tổng",
+                totalExposure: "Tổng Mức Cược:",
+                sessionPL: "Lãi/Lỗ Phiên",
+                lossStreak: "Chuỗi Thua",
+                patternAnalysis: "Phân Tích Mẫu",
+                enterNumbersPattern: "Nhập số để xem mẫu"
+            }
+        };
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.textContent.toLowerCase().includes(lang) || 
+                   (lang === 'en' && btn.textContent === 'English') ||
+                   (lang === 'sv' && btn.textContent === 'Svenska') ||
+                   (lang === 'fi' && btn.textContent === 'Suomi') ||
+                   (lang === 'vi' && btn.textContent === 'Tiếng Việt')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang] && translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            if (history.length > 0) {
+                updateDisplay();
+            }
+        }
+
+        function init() {
+            createRouletteTable();
+        }
+
+        function createRouletteTable() {
+            const table = document.getElementById('rouletteTable');
+            table.innerHTML = '';
+            
+            const zeroCell = document.createElement('div');
+            zeroCell.className = 'table-cell cell-zero';
+            zeroCell.textContent = '0';
+            zeroCell.onclick = () => inputNumber(0);
+            table.appendChild(zeroCell);
+            
+            for (let col = 0; col < 12; col++) {
+                for (let row = 0; row < 3; row++) {
+                    const num = tableColumns[col][row];
+                    const cell = document.createElement('div');
+                    const isRed = redNumbers.includes(num);
+                    cell.className = 'table-cell ' + (isRed ? 'cell-red' : 'cell-black');
+                    cell.textContent = num;
+                    cell.id = 'table-num-' + num;
+                    cell.onclick = () => inputNumber(num);
+                    table.appendChild(cell);
+                }
+            }
+        }
+
+        function highlightTableTiers() {
+            document.querySelectorAll('.table-cell').forEach(cell => {
+                cell.classList.remove('tier1', 'tier2', 'tier3', 'tier4');
+            });
+            
+            if (!currentRecommendations || currentRecommendations.length === 0) return;
+            
+            currentRecommendations.forEach((rec, tierIdx) => {
+                const tierClass = tierIdx === 0 ? 'tier1' : tierIdx === 1 ? 'tier2' : tierIdx === 2 ? 'tier3' : 'tier4';
+                
+                rec.numbers.forEach(num => {
+                    const cell = document.getElementById('table-num-' + num);
+                    if (cell) {
+                        cell.classList.add(tierClass);
+                    }
+                });
+            });
+        }
+
+        function createRacetrack() {
+            const track = document.getElementById('racetrack');
+            track.innerHTML = '';
+            
+            const trackWidth = track.offsetWidth || 500;
+            const trackHeight = track.offsetHeight || 200;
+            const centerX = trackWidth / 2;
+            const centerY = trackHeight / 2;
+            
+            const radiusX = (trackWidth / 2) - 35;
+            const radiusY = (trackHeight / 2) - 25;
+
+            wheelOrder.forEach((num, idx) => {
+                const angle = (idx / wheelOrder.length) * Math.PI * 2;
+                
+                const x = centerX + radiusX * Math.cos(angle) - 17;
+                const y = centerY + radiusY * Math.sin(angle) - 17;
+
+                const div = document.createElement('div');
+                div.className = 'wheel-number ' + (num === 0 ? 'green' : redNumbers.includes(num) ? 'red' : 'black');
+                div.textContent = num;
+                div.style.left = x + 'px';
+                div.style.top = y + 'px';
+                div.id = 'wheel-num-' + num;
+                div.onclick = () => inputNumber(num);
+                
+                track.appendChild(div);
+            });
+        }
+
+        function updateRacetrack() {
+            document.querySelectorAll('.wheel-number').forEach(el => {
+                el.classList.remove('tier1', 'tier2', 'tier3', 'tier4');
+            });
+
+            if (!currentNumber || !currentRecommendations || currentRecommendations.length === 0) return;
+
+            currentRecommendations.forEach((rec, tierIdx) => {
+                const tierClass = tierIdx === 0 ? 'tier1' : tierIdx === 1 ? 'tier2' : tierIdx === 2 ? 'tier3' : 'tier4';
+                
+                rec.numbers.forEach(num => {
+                    const el = document.getElementById('wheel-num-' + num);
+                    if (el) {
+                        el.classList.add(tierClass);
+                    }
+                });
+            });
+        }
+
+        function getNeighbors(target, range = 1) {
+            const idx = wheelOrder.indexOf(target);
+            if (idx === -1) return [];
+            
+            const neighbors = [];
+            for (let i = -range; i <= range; i++) {
+                const wheelIdx = (idx + i + wheelOrder.length) % wheelOrder.length;
+                neighbors.push(wheelOrder[wheelIdx]);
+            }
+            return neighbors;
+        }
+
+        function calculateRecommendations(target, direction) {
+            if (history.length < 2) return [];
+            
+            const followers = {};
+            for (let i = 0; i < history.length - 1; i++) {
+                if (history[i].num === target && history[i].dir === direction) {
+                    const nextNum = history[i + 1].num;
+                    followers[nextNum] = (followers[nextNum] || 0) + 1;
+                }
+            }
+
+            const sorted = Object.entries(followers)
+                .map(([num, count]) => ({ number: parseInt(num), count }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 4);
+
+            if (sorted.length === 0) return [];
+
+            return sorted.map((f, index) => ({
+                tier: index + 1,
+                follower: f.number,
+                numbers: getNeighbors(f.number, 1),
+                count: 3,
+                basedOnDirection: direction
+            }));
+        }
+
+        function setDirection(dir) {
+            currentDirection = dir;
+            
+            document.getElementById('directionSelector').style.display = 'none';
+            document.getElementById('activeDirectionDisplay').style.display = 'block';
+            document.getElementById('importDirectionHint').style.display = 'block';
+            
+            const dirText = dir === 'left' ? 
+                (currentLang === 'sv' ? '← Vänster' : currentLang === 'fi' ? '← Vasen' : currentLang === 'vi' ? '← Trái' : '← Left') :
+                (currentLang === 'sv' ? 'Höger →' : currentLang === 'fi' ? 'Oikea →' : currentLang === 'vi' ? 'Phải →' : 'Right →');
+            document.getElementById('importStartDir').textContent = dirText;
+            
+            updateNextDirectionDisplay();
+            showStatus(`Direction set: ${dir === 'left' ? '←' : '→'} ${dir}. Auto-alternating enabled.`, true);
+            
+            if (history.length > 0) {
+                updateDisplay();
+            }
+        }
+
+        function updateNextDirectionDisplay() {
+            if (!currentDirection) {
+                document.getElementById('nextDirectionArrow').textContent = '-';
+                return;
+            }
+            
+            const arrow = currentDirection === 'left' ? 
+                (currentLang === 'sv' ? '← Vänster (CCW)' : currentLang === 'fi' ? '← Vasen (CCW)' : currentLang === 'vi' ? '← Trái (CCW)' : '← Left (CCW)') :
+                (currentLang === 'sv' ? 'Höger (CW) →' : currentLang === 'fi' ? 'Oikea (CW) →' : currentLang === 'vi' ? 'Phải (CW) →' : 'Right (CW) →');
+            
+            const color = currentDirection === 'left' ? '#e74c3c' : '#2ecc71';
+            const el = document.getElementById('nextDirectionArrow');
+            el.textContent = arrow;
+            el.style.color = color;
+        }
+
+        function toggleDirection() {
+            currentDirection = currentDirection === 'left' ? 'right' : 'left';
+            updateNextDirectionDisplay();
+        }
+
+        function updateMiddleNumbersDisplay() {
+            const banner = document.getElementById('middleNumbersBanner');
+            
+            if (!currentRecommendations || currentRecommendations.length === 0) {
+                banner.style.display = 'none';
+                return;
+            }
+            
+            banner.style.display = 'block';
+            
+            const middles = currentRecommendations.map(rec => rec.numbers[1]);
+            
+            for (let i = 0; i < 4; i++) {
+                const el = document.getElementById(`middleT${i+1}`);
+                if (currentRecommendations[i]) {
+                    el.textContent = currentRecommendations[i].numbers[1];
+                    el.style.display = 'flex';
+                } else {
+                    el.textContent = '-';
+                }
+            }
+            
+            const summary = middles.join(' ');
+            document.getElementById('middleSummary').textContent = summary;
+        }
+
+        function updateAllTiers(highlightNumber = null) {
+            if (!currentRecommendations || currentRecommendations.length === 0) return;
+            
+            const baseBet = parseFloat(document.getElementById('baseBet').value) || 0.10;
+            const multiplier = Math.pow(2, martingaleLevel - 1);
+            const unitBet = baseBet * multiplier;
+            
+            document.getElementById('martingaleLevel').textContent = multiplier + 'x';
+            document.getElementById('unitBet').textContent = '$' + unitBet.toFixed(2);
+            
+            const container = document.getElementById('allTiers');
+            container.innerHTML = '';
+            
+            let totalBet = 0;
+            
+            const tierNames = [
+                currentLang === 'sv' ? '🥇 Nivå 1 (Guld)' : 
+                currentLang === 'fi' ? '🥇 Taso 1 (Kulta)' : 
+                currentLang === 'vi' ? '🥇 Cấp 1 (Vàng)' : 
+                '🥇 Tier 1 (Gold)',
+                
+                currentLang === 'sv' ? '🥈 Nivå 2 (Silver)' : 
+                currentLang === 'fi' ? '🥈 Taso 2 (Hopea)' : 
+                currentLang === 'vi' ? '🥈 Cấp 2 (Bạc)' : 
+                '🥈 Tier 2 (Silver)',
+                
+                currentLang === 'sv' ? '🥉 Nivå 3 (Brons)' : 
+                currentLang === 'fi' ? '🥉 Taso 3 (Pronssi)' : 
+                currentLang === 'vi' ? '🥉 Cấp 3 (Đồng)' : 
+                '🥉 Tier 3 (Bronze)',
+                
+                currentLang === 'sv' ? '💜 Nivå 4 (Lila)' : 
+                currentLang === 'fi' ? '💜 Taso 4 (Violetti)' : 
+                currentLang === 'vi' ? '💜 Cấp 4 (Tím)' : 
+                '💜 Tier 4 (Purple)'
+            ];
+            
+            const tierClasses = ['tier-1', 'tier-2', 'tier-3', 'tier-4'];
+            const tierColors = ['t1', 't2', 't3', 't4'];
+            
+            currentRecommendations.forEach((rec, idx) => {
+                const cost = rec.count * unitBet;
+                totalBet += cost;
+                
+                const row = document.createElement('div');
+                row.className = 'tier-row ' + tierClasses[idx];
+                
+                let numbersHtml = '<div class="tier-numbers-list">';
+                rec.numbers.forEach(num => {
+                    const isHit = (num === highlightNumber);
+                    numbersHtml += '<div class="tier-num ' + tierColors[idx] + (isHit ? ' hit' : '') + '">' + num + '</div>';
+                });
+                numbersHtml += '</div>';
+                
+                const followerText = currentLang === 'sv' ? 'Följare av' : 
+                                   currentLang === 'fi' ? 'Seuraaja' : 
+                                   currentLang === 'vi' ? 'Số theo sau' : 
+                                   'Follower of';
+                
+                const afterText = currentLang === 'sv' ? 'efter' : 
+                                currentLang === 'fi' ? 'jälkeen' : 
+                                currentLang === 'vi' ? 'sau' : 
+                                'after';
+                
+                row.innerHTML = `
+                    <div class="tier-info-left">
+                        <div class="tier-name ${tierColors[idx]}">${tierNames[idx]}</div>
+                        <div class="tier-follower">${followerText} ${rec.follower} (${afterText} ${rec.basedOnDirection})</div>
+                        ${numbersHtml}
+                    </div>
+                    <div class="tier-cost-right">
+                        <div class="tier-bet-amount">$${cost.toFixed(2)}</div>
+                        <div class="tier-num-count">${rec.count} numbers × $${unitBet.toFixed(2)}</div>
+                    </div>
+                `;
+                
+                container.appendChild(row);
+            });
+            
+            lastTotalBet = totalBet;
+            document.getElementById('totalRisk').textContent = '$' + totalBet.toFixed(2);
+            document.getElementById('totalExposure').textContent = '$' + totalBet.toFixed(2);
+        }
+
+        function checkWin(spinNumber) {
+            for (let rec of currentRecommendations) {
+                if (rec.numbers.includes(spinNumber)) {
+                    return { win: true, tier: rec.tier, number: spinNumber };
+                }
+            }
+            return { win: false };
+        }
+
+        function showStatus(message, isWin) {
+            const banner = document.getElementById('statusBanner');
+            banner.className = 'status-banner ' + (isWin ? 'win' : 'loss');
+            banner.innerHTML = message;
+            setTimeout(() => banner.className = 'status-banner', 4000);
+        }
+
+        function processSpin(spinNumber) {
+            if (!currentRecommendations || currentRecommendations.length === 0) return;
+            
+            const result = checkWin(spinNumber);
+            
+            if (result.win) {
+                const baseBet = parseFloat(document.getElementById('baseBet').value) || 0.10;
+                const multiplier = Math.pow(2, martingaleLevel - 1);
+                const unitBet = baseBet * multiplier;
+                const winAmount = (unitBet * 35);
+                const netProfit = winAmount - lastTotalBet;
+                
+                sessionProfit += netProfit;
+                lossStreak = 0;
+                
+                const winText = currentLang === 'sv' ? 'VINST' : 
+                              currentLang === 'fi' ? 'VOITTO' : 
+                              currentLang === 'vi' ? 'THẮNG' : 
+                              'WIN';
+                
+                showStatus(
+                    `🎉 ${winText}! ${spinNumber} hit TIER ${result.tier}! Profit: +$${netProfit.toFixed(2)}`, 
+                    true
+                );
+                
+                martingaleLevel = 1;
+                updateAllTiers(spinNumber);
+                return 'win';
+            } else {
+                sessionProfit -= lastTotalBet;
+                lossStreak++;
+                
+                const lossText = currentLang === 'sv' ? 'FÖRLUST' : 
+                               currentLang === 'fi' ? 'HÄVIÖ' : 
+                               currentLang === 'vi' ? 'THUA' : 
+                               'LOSS';
+                
+                showStatus(
+                    `❌ ${lossText}! ${spinNumber} not in any tier. Level ${martingaleLevel} → ${martingaleLevel + 1}`, 
+                    false
+                );
+                
+                martingaleLevel++;
+                return 'loss';
+            }
+        }
+
+        function importFromText() {
+            if (!currentDirection) {
+                const alertMsg = currentLang === 'sv' ? 'Välj riktning först' : 
+                               currentLang === 'fi' ? 'Valitse suunta ensin' : 
+                               currentLang === 'vi' ? 'Vui lòng chọn hướng trước' : 
+                               'Please select direction first';
+                alert(alertMsg);
+                document.getElementById('directionSelector').scrollIntoView({behavior: 'smooth'});
+                return;
+            }
+
+            const text = document.getElementById('bulkInput').value;
+            if (!text.trim()) return;
+
+            const matches = text.match(/\b([0-9]|[12][0-9]|3[0-6])\b/g);
+            if (!matches) return;
+
+            const numbers = matches.map(n => parseInt(n));
+            
+            if (currentRecommendations && currentRecommendations.length > 0 && history.length > 0) {
+                processSpin(numbers[0]);
+                history.push({num: numbers[0], dir: currentDirection});
+                toggleDirection();
+                
+                for (let i = 1; i < numbers.length; i++) {
+                    processSpin(numbers[i]);
+                    history.push({num: numbers[i], dir: currentDirection});
+                    toggleDirection();
+                }
+            } else {
+                const reversedNumbers = [...numbers].reverse();
+                reversedNumbers.forEach(n => {
+                    history.push({num: n, dir: currentDirection});
+                    toggleDirection();
+                });
+            }
+            
+            if (numbers.length > 0) {
+                currentNumber = numbers[0];
+            }
+            
+            document.getElementById('bulkInput').value = '';
+            updateDisplay();
+        }
+
+        function inputNumber(num) {
+            document.getElementById('numberInput').value = num;
+            addNumber();
+        }
+
+        function addNumber() {
+            const input = document.getElementById('numberInput');
+            const num = parseInt(input.value);
+            
+            if (isNaN(num) || num < 0 || num > 36) {
+                const alertMsg = currentLang === 'sv' ? 'Ange 0-36' : 
+                               currentLang === 'fi' ? 'Syötä 0-36' : 
+                               currentLang === 'vi' ? 'Nhập 0-36' : 
+                               'Enter 0-36';
+                alert(alertMsg);
+                return;
+            }
+            
+            if (!currentDirection) {
+                const alertMsg = currentLang === 'sv' ? 'Välj snurrikning först' : 
+                               currentLang === 'fi' ? 'Valitse pyörityssuunta ensin' : 
+                               currentLang === 'vi' ? 'Vui lòng chọn hướng quay trước' : 
+                               'Please select spin direction first';
+                alert(alertMsg);
+                document.getElementById('directionSelector').scrollIntoView({behavior: 'smooth'});
+                return;
+            }
+            
+            if (currentRecommendations && currentRecommendations.length > 0 && history.length > 0) {
+                processSpin(num);
+            }
+            
+            history.push({num: num, dir: currentDirection});
+            currentNumber = num;
+            
+            toggleDirection();
+            
+            input.value = '';
+            updateDisplay();
+        }
+
+        function undoLast() {
+            if (history.length > 0) {
+                const removed = history.pop();
+                
+                currentDirection = removed.dir;
+                updateNextDirectionDisplay();
+                
+                if (history.length > 0) {
+                    currentNumber = history[history.length - 1].num;
+                } else {
+                    currentNumber = null;
+                }
+                updateDisplay();
+            }
+        }
+
+        function endSession() {
+            currentDirection = null;
+            document.getElementById('directionSelector').style.display = 'block';
+            document.getElementById('activeDirectionDisplay').style.display = 'none';
+            document.getElementById('importDirectionHint').style.display = 'none';
+            
+            const msg = currentLang === 'sv' ? 'Session avslutad. Välj riktning för ny sekvens.' : 
+                       currentLang === 'fi' ? 'Istunto päättynyt. Valitse suunta uudelle sekvenssille.' : 
+                       currentLang === 'vi' ? 'Phiên kết thúc. Chọn hướng cho chuỗi mới.' : 
+                       'Session ended. Select direction for new sequence.';
+            showStatus(msg, true);
+            
+            currentRecommendations = [];
+            document.getElementById('bettingBox').style.display = 'none';
+            document.getElementById('racetrackContainer').style.display = 'none';
+            document.getElementById('middleNumbersBanner').style.display = 'none';
+            updateDisplay();
+        }
+
+        function resetMartingale() {
+            martingaleLevel = 1;
+            updateAllTiers();
+            
+            const msg = currentLang === 'sv' ? 'Martingale återställd till 1x' : 
+                       currentLang === 'fi' ? 'Martingale nollattu 1x' : 
+                       currentLang === 'vi' ? 'Martingale đặt lại về 1x' : 
+                       'Martingale reset to 1x';
+            showStatus(msg, true);
+        }
+
+        function resetSystem() {
+            const confirmMsg = currentLang === 'sv' ? 'Återställa allt inklusive historik och riktning?' : 
+                             currentLang === 'fi' ? 'Nollaa kaikki mukaan lukien historia ja suunta?' : 
+                             currentLang === 'vi' ? 'Đặt lại tất cả bao gồm lịch sử và hướng?' : 
+                             'Reset everything including history and direction?';
+            
+            if (!confirm(confirmMsg)) return;
+            
+            history = [];
+            currentNumber = null;
+            currentDirection = null;
+            martingaleLevel = 1;
+            currentRecommendations = [];
+            sessionProfit = 0;
+            lossStreak = 0;
+            
+            document.getElementById('directionSelector').style.display = 'block';
+            document.getElementById('activeDirectionDisplay').style.display = 'none';
+            document.getElementById('importDirectionHint').style.display = 'none';
+            
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const grid = document.getElementById('historyGrid');
+            document.getElementById('historyCount').textContent = history.length;
+            document.getElementById('sessionProfit').textContent = (sessionProfit >= 0 ? '+' : '') + '$' + sessionProfit.toFixed(2);
+            document.getElementById('sessionProfit').className = 'stat-box-value ' + (sessionProfit >= 0 ? 'profit' : 'loss');
+            document.getElementById('lossStreak').textContent = lossStreak;
+            
+            if (currentNumber !== null && history.length > 0) {
+                const lastEntry = history[history.length - 1];
+                document.getElementById('currentDisplayBox').style.display = 'block';
+                document.getElementById('currentNumberDisplay').textContent = lastEntry.num;
+                
+                const dirText = lastEntry.dir === 'left' ? 
+                    (currentLang === 'sv' ? '← Vänster' : currentLang === 'fi' ? '← Vasen' : currentLang === 'vi' ? '← Trái' : '← Left') :
+                    (currentLang === 'sv' ? 'Höger →' : currentLang === 'fi' ? 'Oikea →' : currentLang === 'vi' ? 'Phải →' : 'Right →');
+                
+                const badge = document.getElementById('currentDirectionBadge');
+                badge.textContent = dirText;
+                badge.style.color = lastEntry.dir === 'left' ? '#e74c3c' : '#2ecc71';
+                badge.style.borderColor = lastEntry.dir === 'left' ? '#e74c3c' : '#2ecc71';
+            } else {
+                document.getElementById('currentDisplayBox').style.display = 'none';
+            }
+            
+            if (history.length === 0) {
+                const noDataText = currentLang === 'sv' ? 'Ingen data' : 
+                                 currentLang === 'fi' ? 'Ei dataa' : 
+                                 currentLang === 'vi' ? 'Không có dữ liệu' : 
+                                 'No data';
+                grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">${noDataText}</div>`;
+                document.getElementById('racetrackContainer').style.display = 'none';
+                document.getElementById('bettingBox').style.display = 'none';
+                document.getElementById('middleNumbersBanner').style.display = 'none';
+                return;
+            }
+
+            grid.innerHTML = '';
+            const displayHistory = history.slice().reverse().slice(0, 48);
+            
+            displayHistory.forEach((entry, idx) => {
+                const div = document.createElement('div');
+                const isLatest = idx === 0;
+                const isLeft = entry.dir === 'left';
+                
+                div.className = 'history-item ' + (isLatest ? 'latest ' : '') + (isLeft ? 'left-spin' : 'right-spin');
+                
+                div.innerHTML = `
+                    <div class="history-number">${entry.num}</div>
+                    <div class="history-direction">${isLeft ? '←' : '→'}</div>
+                `;
+                
+                grid.appendChild(div);
+            });
+
+            if (history.length >= 2) {
+                const lastEntry = history[history.length - 1];
+                
+                if (currentDirection) {
+                    currentRecommendations = calculateRecommendations(lastEntry.num, lastEntry.dir);
+                    
+                    if (currentRecommendations && currentRecommendations.length > 0) {
+                        document.getElementById('racetrackContainer').style.display = 'block';
+                        document.getElementById('bettingBox').style.display = 'block';
+                        createRacetrack();
+                        setTimeout(() => {
+                            updateRacetrack();
+                            highlightTableTiers();
+                            updateAllTiers();
+                            updateMiddleNumbersDisplay();
+                            updatePatternAnalysis();
+                        }, 50);
+                    }
+                }
+            } else {
+                document.getElementById('racetrackContainer').style.display = 'none';
+                document.getElementById('bettingBox').style.display = 'none';
+                document.getElementById('middleNumbersBanner').style.display = 'none';
+            }
+        }
+
+        function updatePatternAnalysis() {
+            const container = document.getElementById('patternStats');
+            if (history.length === 0) {
+                const msg = currentLang === 'sv' ? 'Ange nummer för att se mönster' : 
+                           currentLang === 'fi' ? 'Syötä numeroita nähdäksesi kuviot' : 
+                           currentLang === 'vi' ? 'Nhập số để xem mẫu' : 
+                           'Enter numbers to see patterns';
+                container.innerHTML = `<div class="empty-state">${msg}</div>`;
+                return;
+            }
+            
+            const lastEntry = history[history.length - 1];
+            const target = lastEntry.num;
+            const direction = lastEntry.dir;
+            
+            const followers = {};
+            for (let i = 0; i < history.length - 1; i++) {
+                if (history[i].num === target && history[i].dir === direction) {
+                    const next = history[i + 1].num;
+                    followers[next] = (followers[next] || 0) + 1;
+                }
+            }
+
+            const sorted = Object.entries(followers)
+                .map(([num, count]) => ({ number: parseInt(num), count }))
+                .sort((a, b) => b.count - a.count);
+
+            if (sorted.length === 0) {
+                const dirText = direction === 'left' ? 
+                    (currentLang === 'sv' ? 'Vänster' : currentLang === 'fi' ? 'Vasen' : currentLang === 'vi' ? 'Trái' : 'Left') :
+                    (currentLang === 'sv' ? 'Höger' : currentLang === 'fi' ? 'Oikea' : currentLang === 'vi' ? 'Phải' : 'Right');
+                
+                const msg = currentLang === 'sv' ? `Ingen data för ${target} ${dirText} ännu` : 
+                           currentLang === 'fi' ? `Ei dataa vielä ${target} ${dirText}` : 
+                           currentLang === 'vi' ? `Chưa có dữ liệu cho ${target} ${dirText}` : 
+                           `No data for ${target} ${dirText} yet`;
+                container.innerHTML = `<div class="empty-state">${msg}</div>`;
+                return;
+            }
+
+            const whenText = currentLang === 'sv' ? 'När' : 
+                           currentLang === 'fi' ? 'Kun' : 
+                           currentLang === 'vi' ? 'Khi' : 
+                           'When';
+            
+            const spinsText = currentLang === 'sv' ? 'snurrar' : 
+                            currentLang === 'fi' ? 'pyöräyttää' : 
+                            currentLang === 'vi' ? 'quay' : 
+                            'spins';
+            
+            const nextIsText = currentLang === 'sv' ? 'är nästa vanligtvis:' : 
+                             currentLang === 'fi' ? 'seuraava on yleensä:' : 
+                             currentLang === 'vi' ? 'thường tiếp theo là:' : 
+                             'next is usually:';
+            
+            const dirText = direction === 'left' ? 
+                (currentLang === 'sv' ? 'Vänster' : currentLang === 'fi' ? 'Vasen' : currentLang === 'vi' ? 'Trái' : 'Left') :
+                (currentLang === 'sv' ? 'Höger' : currentLang === 'fi' ? 'Oikea' : currentLang === 'vi' ? 'Phải' : 'Right');
+            
+            let html = `<div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px;">
+                ${whenText} <strong>${target}</strong> ${spinsText} <strong style="color: ${direction === 'left' ? '#e74c3c' : '#2ecc71'}">${dirText}</strong>, ${nextIsText}
+            </div>`;
+            
+            html += '<div style="display: flex; flex-direction: column; gap: 8px;">';
+            
+            const timesText = currentLang === 'sv' ? 'gånger' : 
+                            currentLang === 'fi' ? 'kertaa' : 
+                            currentLang === 'vi' ? 'lần' : 
+                            'times';
+            
+            sorted.forEach((f, i) => {
+                const colors = ['var(--tier1-color)', 'var(--tier2-color)', 'var(--tier3-color)', 'var(--tier4-color)'];
+                const color = i < 4 ? colors[i] : 'var(--text-secondary)';
+                
+                html += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 6px; border-left: 3px solid ${color};">
+                        <span style="font-weight: bold; font-size: 1.2rem;">${f.number}</span>
+                        <span style="color: var(--accent-gold); font-weight: bold;">${f.count} ${timesText}</span>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        document.getElementById('numberInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') addNumber();
+        });
+
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (currentNumber && history.length > 0) {
+                    createRacetrack();
+                    updateRacetrack();
+                }
+            }, 250);
+        });
+
+        init();
+    </script>
+</body>
+</html>
