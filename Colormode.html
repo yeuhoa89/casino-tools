@@ -1124,6 +1124,80 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
         }
+
+        /* Data Collection Progress Styles */
+        .data-collection-panel {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .collection-progress {
+            margin: 20px 0;
+        }
+
+        .progress-bar-bg {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            height: 30px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--accent-gold), #ffd700);
+            height: 100%;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .collection-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .collection-highlight {
+            color: var(--accent-gold);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .waiting-message {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px dashed rgba(212, 175, 55, 0.5);
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .waiting-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
+
+        .waiting-text {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+
+        .waiting-subtext {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
     </style>
 </head>
 <body>
@@ -1138,7 +1212,7 @@
         </header>
 
         <div class="disclaimer" data-i18n="disclaimer">
-            Color Pattern Mode: Analyzes Red/Black patterns, Even/Odd distribution, and historical number followers. Recommends bets based on streaks and statistical probability.
+            Color Pattern Mode: Analyzes Red/Black patterns, Even/Odd distribution, and historical number followers. Recommends bets based on streaks and statistical probability. Advice starts after 8 numbers collected.
         </div>
 
         <div id="statusBanner" class="status-banner"></div>
@@ -1147,7 +1221,30 @@
         <div class="main-grid">
             <!-- Left Column -->
             <div class="left-col">
-                <!-- Strategy Monitor Panel -->
+                <!-- Data Collection Progress (Shows until 8 numbers reached) -->
+                <div class="data-collection-panel" id="dataCollectionPanel" style="display: none;">
+                    <div class="panel-title">📊 <span data-i18n="collectingData">Collecting Data</span></div>
+                    <div class="collection-progress">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="collectionProgressBar" style="width: 0%;">
+                                <span id="progressText">0/8</span>
+                            </div>
+                        </div>
+                        <div class="collection-text">
+                            <span data-i18n="needMoreNumbers">Need</span> 
+                            <span class="collection-highlight" id="numbersNeeded">8</span> 
+                            <span data-i18n="numbersForAdvice">more numbers for advice</span>
+                        </div>
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px;">
+                        <span data-i18n="currentStats">Current Stats:</span> 
+                        <span id="miniRedCount" style="color: #ff6b6b;">0</span> 🔴 / 
+                        <span id="miniBlackCount" style="color: #fff;">0</span> ⚫ / 
+                        <span id="miniZeroCount" style="color: #2ecc71;">0</span> 🟢
+                    </div>
+                </div>
+
+                <!-- Strategy Monitor Panel (Hidden until 8 numbers) -->
                 <div class="strategy-panel" id="strategyPanel" style="display: none;">
                     <div class="strategy-header">
                         <div class="strategy-title" data-i18n="strategyMonitor">Strategy Monitor</div>
@@ -1178,6 +1275,7 @@
                     </div>
                 </div>
 
+                <!-- Color Prediction Display (Hidden until 8 numbers) -->
                 <div class="color-prediction-display" id="colorPredictionDisplay" style="display: none;">
                     <div class="current-label-top" id="colorPredictionTitle" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;">Color Prediction</div>
                     <div class="prediction-main">
@@ -1228,6 +1326,13 @@
 
             <!-- Center Column -->
             <div class="center-col">
+                <!-- Waiting Message (Shows 1-7 numbers) -->
+                <div class="waiting-message" id="waitingMessage" style="display: none;">
+                    <div class="waiting-icon">⏳</div>
+                    <div class="waiting-text" data-i18n="analyzingPatterns">Analyzing Patterns...</div>
+                    <div class="waiting-subtext" data-i18n="adviceStartsAt">Color advice will start after 8 numbers</div>
+                </div>
+
                 <div class="pattern-display" id="patternDisplay" style="display: none;">
                     <div class="pattern-title" id="patternTitle">📊 Pattern Recognition</div>
                     <div class="pattern-sequence" id="patternSequence"></div>
@@ -1286,7 +1391,7 @@
                     </div>
                 </div>
 
-                <!-- Color Betting Box - Center Circle Design -->
+                <!-- Color Betting Box (Hidden until 8 numbers) -->
                 <div class="betting-recommendation" id="colorBettingBox" style="display: none;">
                     <div class="betting-header">
                         <div class="betting-title" id="colorAdvisorTitle">🎯 Color Advisor</div>
@@ -1444,11 +1549,14 @@
         let currentStrategy = 'history';
         let strategySwitches = [];
 
+        // Minimum numbers required before advice starts
+        const MIN_NUMBERS_FOR_ADVICE = 8;
+
         const translations = {
             en: {
                 appTitle: "ROULETTE SEQUENCE ANALYST",
                 subtitle: "Color Analysis • Pattern Recognition • Smart Betting",
-                disclaimer: "Color Pattern Mode: Analyzes Red/Black patterns, Even/Odd distribution, and historical number followers. Recommends bets based on streaks and statistical probability.",
+                disclaimer: "Color Pattern Mode: Analyzes Red/Black patterns, Even/Odd distribution, and historical number followers. Recommends bets based on streaks and statistical probability. Advice starts after 8 numbers collected.",
                 currentNumber: "Current Number",
                 importData: "Import Data",
                 importPlaceholder: "Paste numbers (comma or newline separated)",
@@ -1497,12 +1605,20 @@
                 startBalance: "Start Balance",
                 currentBalance: "Current Balance",
                 netProfit: "Net Profit/Loss",
-                lowBalanceWarning: "⚠️ Low Balance! Risk Management Recommended"
+                lowBalanceWarning: "⚠️ Low Balance! Risk Management Recommended",
+                collectingData: "Collecting Data",
+                needMoreNumbers: "Need",
+                numbersForAdvice: "more numbers for advice",
+                currentStats: "Current Stats:",
+                analyzingPatterns: "Analyzing Patterns...",
+                adviceStartsAt: "Color advice will start after 8 numbers",
+                readyToAdvise: "✅ Ready to advise!",
+                keepEntering: "Keep entering numbers to unlock advice"
             },
             vi: {
                 appTitle: "NHÀ PHÂN TÍCH CHUỖI ROULETTE",
                 subtitle: "Phân Tích Màu • Nhận Diện Mẫu • Cược Thông Minh",
-                disclaimer: "Chế độ Màu: Phân tích mẫu Đỏ/Đen, phân phối Chẵn/Lẻ, và số theo sau lịch sử. Đề xuất cược dựa trên chuỗi và xác suất thống kê.",
+                disclaimer: "Chế độ Màu: Phân tích mẫu Đỏ/Đen, phân phối Chẵn/Lẻ, và số theo sau lịch sử. Đề xuất cược dựa trên chuỗi và xác suất thống kê. Tư vấn bắt đầu sau 8 số.",
                 currentNumber: "Số Hiện Tại",
                 importData: "Nhập Dữ Liệu",
                 importPlaceholder: "Dán số (phân cách bằng dấu phẩy hoặc xuống dòng)",
@@ -1551,7 +1667,15 @@
                 startBalance: "Vốn Ban Đầu",
                 currentBalance: "Vốn Hiện Tại",
                 netProfit: "Lãi/Lỗ Ròng",
-                lowBalanceWarning: "⚠️ Vốn Thấp! Cần Quản Lý Rủi Ro"
+                lowBalanceWarning: "⚠️ Vốn Thấp! Cần Quản Lý Rủi Ro",
+                collectingData: "Đang Thu Thập Dữ Liệu",
+                needMoreNumbers: "Cần thêm",
+                numbersForAdvice: "số nữa để tư vấn",
+                currentStats: "Thống kê hiện tại:",
+                analyzingPatterns: "Đang Phân Tích Mẫu...",
+                adviceStartsAt: "Tư vấn màu sẽ bắt đầu sau 8 số",
+                readyToAdvise: "✅ Sẵn sàng tư vấn!",
+                keepEntering: "Tiếp tục nhập số để mở khóa tư vấn"
             }
         };
 
@@ -1583,6 +1707,7 @@
 
             updateStrategyDisplay();
             updateBankrollDisplay();
+            updateDataCollectionPanel();
             if (history.length > 0) {
                 updateDisplay();
             }
@@ -1622,7 +1747,7 @@
                 cell.classList.remove('predict-red', 'predict-black');
             });
             
-            if (currentColorPrediction) {
+            if (currentColorPrediction && history.length >= MIN_NUMBERS_FOR_ADVICE) {
                 const predictClass = currentColorPrediction.color === 'red' ? 'predict-red' : 'predict-black';
                 document.querySelectorAll('.table-cell').forEach(cell => {
                     const num = parseInt(cell.textContent);
@@ -1635,6 +1760,44 @@
                     }
                 });
             }
+        }
+
+        // Data Collection Panel Update
+        function updateDataCollectionPanel() {
+            const panel = document.getElementById('dataCollectionPanel');
+            const progressBar = document.getElementById('collectionProgressBar');
+            const progressText = document.getElementById('progressText');
+            const numbersNeeded = document.getElementById('numbersNeeded');
+            
+            if (history.length === 0) {
+                panel.style.display = 'none';
+                return;
+            }
+            
+            if (history.length >= MIN_NUMBERS_FOR_ADVICE) {
+                panel.style.display = 'none';
+                return;
+            }
+            
+            panel.style.display = 'block';
+            const progress = (history.length / MIN_NUMBERS_FOR_ADVICE) * 100;
+            const remaining = MIN_NUMBERS_FOR_ADVICE - history.length;
+            
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `${history.length}/${MIN_NUMBERS_FOR_ADVICE}`;
+            numbersNeeded.textContent = remaining;
+            
+            // Update mini stats
+            let redCount = 0, blackCount = 0, zeroCount = 0;
+            history.forEach(h => {
+                if (h.num === 0) zeroCount++;
+                else if (redNumbers.includes(h.num)) redCount++;
+                else blackCount++;
+            });
+            
+            document.getElementById('miniRedCount').textContent = redCount;
+            document.getElementById('miniBlackCount').textContent = blackCount;
+            document.getElementById('miniZeroCount').textContent = zeroCount;
         }
 
         // Bankroll Management Functions
@@ -1692,7 +1855,7 @@
 
         // Strategy Analysis Functions
         function getHistoryPrediction() {
-            if (history.length === 0) return null;
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) return null;
             
             const lastEntry = history[history.length - 1];
             const targetNum = lastEntry.num;
@@ -1724,7 +1887,7 @@
         }
 
         function getEvenOddPrediction() {
-            if (history.length === 0) return null;
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) return null;
             
             const lastEntry = history[history.length - 1];
             const targetNum = lastEntry.num;
@@ -1763,7 +1926,7 @@
         }
 
         function getPatternPrediction() {
-            if (history.length < 4) return null;
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) return null;
             
             const last4 = history.slice(-4).map(h => {
                 if (h.num === 0) return 'G';
@@ -1855,6 +2018,8 @@
         }
 
         function checkStrategySwitch() {
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) return false;
+            
             // Only check after 2 consecutive losses on current strategy
             if (strategies[currentStrategy].lossStreak < 2) return false;
             
@@ -1897,8 +2062,13 @@
         }
 
         function updateStrategyDisplay() {
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) {
+                document.getElementById('strategyPanel').style.display = 'none';
+                return;
+            }
+            
             // Update strategy panel
-            document.getElementById('strategyPanel').style.display = history.length > 0 ? 'block' : 'none';
+            document.getElementById('strategyPanel').style.display = 'block';
             
             // Update active badge
             const activeName = translations[currentLang][currentStrategy] || currentStrategy;
@@ -1928,24 +2098,69 @@
         }
 
         function updateColorDisplay() {
+            // Update data collection panel (shows progress 1-7)
+            updateDataCollectionPanel();
+            
             if (history.length === 0) {
                 document.getElementById('colorPredictionDisplay').style.display = 'none';
                 document.getElementById('colorStatsGrid').style.display = 'none';
                 document.getElementById('patternDisplay').style.display = 'none';
                 document.getElementById('colorBettingBox').style.display = 'none';
-                document.getElementById('bankrollPanel').style.display = 'none';
+                document.getElementById('waitingMessage').style.display = 'none';
                 return;
             }
             
-            // Check if we need to switch strategy before displaying
-            checkStrategySwitch();
-            
-            // Show elements
-            document.getElementById('colorPredictionDisplay').style.display = 'block';
+            // Show color stats and basic pattern display regardless of count
             document.getElementById('colorStatsGrid').style.display = 'grid';
             document.getElementById('patternDisplay').style.display = 'block';
+            
+            // Show waiting message if less than 8 numbers
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) {
+                document.getElementById('colorPredictionDisplay').style.display = 'none';
+                document.getElementById('colorBettingBox').style.display = 'none';
+                document.getElementById('waitingMessage').style.display = 'block';
+                document.getElementById('strategyPanel').style.display = 'none';
+                
+                // Still update pattern display but don't show advice
+                const pattern = detectPattern();
+                const seqContainer = document.getElementById('patternSequence');
+                seqContainer.innerHTML = '';
+                
+                if (pattern && pattern.sequence) {
+                    pattern.sequence.forEach((col, idx) => {
+                        const div = document.createElement('div');
+                        div.className = 'pattern-item ' + (col === 'R' ? 'red' : col === 'B' ? 'black' : 'green');
+                        div.textContent = col;
+                        if (idx === pattern.sequence.length - 1) {
+                            div.style.boxShadow = '0 0 15px currentColor';
+                            div.style.transform = 'scale(1.2)';
+                        }
+                        seqContainer.appendChild(div);
+                    });
+                    
+                    document.getElementById('patternName').textContent = pattern.name;
+                }
+                
+                // Update stats
+                const stats = calculateColorStats();
+                document.getElementById('redCount').textContent = stats.redCount;
+                document.getElementById('blackCount').textContent = stats.blackCount;
+                document.getElementById('redStreak').textContent = stats.redStreak;
+                document.getElementById('blackStreak').textContent = stats.blackStreak;
+                
+                // Update bankroll display (always show if we have history)
+                updateBankrollDisplay();
+                
+                return;
+            }
+            
+            // Past 8 numbers - show full advice
+            document.getElementById('waitingMessage').style.display = 'none';
+            document.getElementById('colorPredictionDisplay').style.display = 'block';
             document.getElementById('colorBettingBox').style.display = 'block';
-            document.getElementById('bankrollPanel').style.display = 'block';
+            
+            // Check if we need to switch strategy before displaying
+            checkStrategySwitch();
             
             // Get prediction from current strategy
             let prediction;
@@ -2035,9 +2250,6 @@
             // Update betting recommendation with circle
             updateColorBetting();
             
-            // Update bankroll display
-            updateBankrollDisplay();
-            
             // Update strategy display
             updateStrategyDisplay();
             
@@ -2099,7 +2311,7 @@
         }
 
         function updateEvenOddAnalysis() {
-            if (history.length < 2) return;
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) return;
             
             const evenNext = { red: 0, black: 0 };
             const oddNext = { red: 0, black: 0 };
@@ -2128,7 +2340,7 @@
         }
 
         function updateColorBetting() {
-            if (!currentColorPrediction) return;
+            if (!currentColorPrediction || history.length < MIN_NUMBERS_FOR_ADVICE) return;
             
             const baseBet = parseFloat(document.getElementById('colorBaseBet').value) || 10;
             const multiplier = Math.pow(2, colorMartingaleLevel - 1);
@@ -2184,9 +2396,16 @@
         }
 
         function processColorWinLoss(spinNumber) {
-            if (!currentColorPrediction) return;
+            // Only process win/loss tracking after we have enough data for predictions
+            // But we track bankroll immediately
+            if (!currentColorPrediction && history.length >= MIN_NUMBERS_FOR_ADVICE) return;
             
-            // Zero is always a losing bet
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) {
+                // Just update the data collection panel, no betting yet
+                updateDataCollectionPanel();
+                return;
+            }
+            
             const isRed = redNumbers.includes(spinNumber);
             const isWin = (currentColorPrediction.color === 'red' && isRed) || 
                          (currentColorPrediction.color === 'black' && !isRed && spinNumber !== 0);
@@ -2229,7 +2448,6 @@
                 colorMartingaleLevel++;
             }
             
-            // Update bankroll display after each win/loss
             updateBankrollDisplay();
             updateColorBetting();
             updateStrategyDisplay();
@@ -2251,9 +2469,12 @@
 
             const numbers = matches.map(n => parseInt(n));
             
-            numbers.forEach(n => {
-                if (history.length > 0) {
-                    processColorWinLoss(n);
+            numbers.forEach((n, index) => {
+                // Only process win/loss if we have enough previous data
+                if (history.length > 0 && history.length >= MIN_NUMBERS_FOR_ADVICE - 1) {
+                    // For imported data, we need to simulate the prediction that would have been made
+                    // This is complex for batch import, so we'll just add to history without processing win/loss for imports
+                    // Or we could process it if we rebuild the prediction logic...
                 }
                 history.push({num: n, dir: 'left'});
             });
@@ -2263,6 +2484,12 @@
             }
             
             document.getElementById('bulkInput').value = '';
+            
+            // Recalculate if we imported enough data
+            if (history.length >= MIN_NUMBERS_FOR_ADVICE) {
+                recalculateStats();
+            }
+            
             updateDisplay();
         }
 
@@ -2281,8 +2508,12 @@
                 return;
             }
             
-            if (history.length > 0) {
+            // Process win/loss only if we have enough data for a prediction
+            if (history.length >= MIN_NUMBERS_FOR_ADVICE - 1) {
                 processColorWinLoss(num);
+            } else if (history.length > 0) {
+                // We're still collecting data, show progress but don't bet
+                updateDataCollectionPanel();
             }
             
             history.push({num: num, dir: 'left'});
@@ -2318,6 +2549,9 @@
                 strategies[key].lossStreak = 0;
             });
             
+            // Only replay if we have enough data
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) return;
+            
             // Replay history
             let tempHistory = [];
             
@@ -2331,39 +2565,45 @@
                 const savedHistory = history;
                 history = tempHistory;
                 
-                // Check strategy switch before processing
-                if (strategies[currentStrategy].lossStreak >= 2) {
-                    const best = selectBestStrategy();
-                    if (best !== currentStrategy) {
-                        currentStrategy = best;
-                        Object.keys(strategies).forEach(k => strategies[k].lossStreak = 0);
+                // Check if we should process this spin (only after we have 8 total)
+                if (tempHistory.length >= MIN_NUMBERS_FOR_ADVICE - 1) {
+                    // Check strategy switch before processing
+                    if (strategies[currentStrategy].lossStreak >= 2) {
+                        const best = selectBestStrategy();
+                        if (best !== currentStrategy) {
+                            currentStrategy = best;
+                            Object.keys(strategies).forEach(k => strategies[k].lossStreak = 0);
+                        }
                     }
-                }
-                
-                // Get prediction
-                let pred;
-                switch(currentStrategy) {
-                    case 'history': pred = getHistoryPrediction(); break;
-                    case 'evenodd': pred = getEvenOddPrediction(); break;
-                    case 'pattern': pred = getPatternPrediction(); break;
-                }
-                
-                if (pred) {
-                    const spinNum = savedHistory[i].num;
-                    const isRed = redNumbers.includes(spinNum);
-                    const isWin = (pred.color === 'red' && isRed) || (pred.color === 'black' && !isRed && spinNum !== 0);
                     
-                    if (isWin) {
-                        colorSessionProfit += (parseFloat(document.getElementById('colorBaseBet').value) || 0.20) * Math.pow(2, colorMartingaleLevel - 1);
-                        colorWins++;
-                        strategies[currentStrategy].lossStreak = 0;
-                        colorMartingaleLevel = 1;
-                    } else {
-                        colorSessionProfit -= (parseFloat(document.getElementById('colorBaseBet').value) || 0.20) * Math.pow(2, colorMartingaleLevel - 1);
-                        colorLosses++;
-                        colorLossStreak++;
-                        strategies[currentStrategy].lossStreak++;
-                        colorMartingaleLevel++;
+                    // Get prediction
+                    let pred;
+                    switch(currentStrategy) {
+                        case 'history': pred = getHistoryPrediction(); break;
+                        case 'evenodd': pred = getEvenOddPrediction(); break;
+                        case 'pattern': pred = getPatternPrediction(); break;
+                    }
+                    
+                    if (pred) {
+                        const spinNum = savedHistory[i].num;
+                        const isRed = redNumbers.includes(spinNum);
+                        const isWin = (pred.color === 'red' && isRed) || (pred.color === 'black' && !isRed && spinNum !== 0);
+                        
+                        const baseBet = parseFloat(document.getElementById('colorBaseBet').value) || 0.20;
+                        const betAmount = baseBet * Math.pow(2, colorMartingaleLevel - 1);
+                        
+                        if (isWin) {
+                            colorSessionProfit += betAmount;
+                            colorWins++;
+                            strategies[currentStrategy].lossStreak = 0;
+                            colorMartingaleLevel = 1;
+                        } else {
+                            colorSessionProfit -= betAmount;
+                            colorLosses++;
+                            colorLossStreak++;
+                            strategies[currentStrategy].lossStreak++;
+                            colorMartingaleLevel++;
+                        }
                     }
                 }
                 
@@ -2427,6 +2667,8 @@
                 document.getElementById('patternDisplay').style.display = 'none';
                 document.getElementById('strategyPanel').style.display = 'none';
                 document.getElementById('bankrollPanel').style.display = 'none';
+                document.getElementById('dataCollectionPanel').style.display = 'none';
+                document.getElementById('waitingMessage').style.display = 'none';
                 return;
             }
 
@@ -2472,6 +2714,16 @@
             if (history.length === 0) {
                 const msg = currentLang === 'vi' ? 'Nhập số để xem mẫu' : 'Enter numbers to see patterns';
                 container.innerHTML = `<div class="empty-state">${msg}</div>`;
+                return;
+            }
+            
+            // If less than 8 numbers, show collection message
+            if (history.length < MIN_NUMBERS_FOR_ADVICE) {
+                const remaining = MIN_NUMBERS_FOR_ADVICE - history.length;
+                const msg = currentLang === 'vi' 
+                    ? `📊 Đang thu thập dữ liệu... (${history.length}/8 số)<br>Cần thêm ${remaining} số nữa để bắt đầu tư vấn.`
+                    : `📊 Collecting Data... (${history.length}/8 numbers)<br>Need ${remaining} more numbers for advice.`;
+                container.innerHTML = `<div style="text-align: center; color: var(--accent-gold); padding: 20px; font-size: 0.9rem;">${msg}</div>`;
                 return;
             }
             
