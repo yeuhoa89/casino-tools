@@ -1034,6 +1034,96 @@
             color: var(--text-secondary);
             font-size: 0.85rem;
         }
+
+        /* Bankroll Panel Styles */
+        .bankroll-panel {
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(21, 27, 45, 0.8));
+            border: 2px solid var(--accent-green);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .bankroll-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .bankroll-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .bankroll-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 10px;
+            font-size: 1.1rem;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        .bankroll-display {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .bankroll-display.positive {
+            border-color: var(--accent-green);
+            background: rgba(46, 204, 113, 0.1);
+        }
+
+        .bankroll-display.negative {
+            border-color: var(--accent-red);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .profit-display {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .profit-display.positive {
+            color: var(--accent-green);
+            text-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+        }
+
+        .profit-display.negative {
+            color: var(--accent-red);
+            text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+
+        .roi-display {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .warning-text {
+            color: var(--accent-red);
+            font-size: 0.8rem;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .balance-warning {
+            animation: pulse-warning 2s infinite;
+        }
+
+        @keyframes pulse-warning {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
     </style>
 </head>
 <body>
@@ -1173,6 +1263,29 @@
 
             <!-- Right Column -->
             <div class="right-col">
+                <!-- Bankroll Management Panel -->
+                <div class="bankroll-panel" id="bankrollPanel" style="display: none;">
+                    <div class="panel-title">💰 <span data-i18n="bankroll">Bankroll</span></div>
+                    <div class="bankroll-grid">
+                        <div class="bankroll-input-group">
+                            <label class="color-stat-label" data-i18n="startBalance">Start Balance</label>
+                            <input type="number" class="bankroll-input" id="startBalanceInput" value="100" min="0" step="1" onchange="updateStartBalance()" placeholder="100">
+                        </div>
+                        <div class="bankroll-input-group">
+                            <label class="color-stat-label" data-i18n="currentBalance">Current Balance</label>
+                            <div class="color-stat-value" id="currentBalanceDisplay" style="font-size: 1.3rem; color: var(--accent-gold);">$100.00</div>
+                        </div>
+                    </div>
+                    <div class="bankroll-display" id="netProfitContainer">
+                        <div class="color-stat-label" data-i18n="netProfit">Net Profit/Loss</div>
+                        <div class="profit-display" id="netProfitDisplay">+$0.00</div>
+                        <div class="roi-display" id="roiDisplay">0.00% ROI</div>
+                        <div class="warning-text balance-warning" id="lowBalanceWarning" style="display: none;">
+                            ⚠️ Low Balance! Risk Management Recommended
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Color Betting Box - Center Circle Design -->
                 <div class="betting-recommendation" id="colorBettingBox" style="display: none;">
                     <div class="betting-header">
@@ -1319,6 +1432,9 @@
         let currentColorPrediction = null;
         let lastColorBet = 0;
         
+        // Bankroll Management
+        let startBalance = 100;
+        
         // Strategy Management
         let strategies = {
             history: { name: 'history', lossStreak: 0, active: true },
@@ -1376,7 +1492,12 @@
                 dueToLowerStreak: "due to lower loss streak",
                 historyNumber: "History Number",
                 evenOdd: "Even/Odd",
-                pattern: "Pattern"
+                pattern: "Pattern",
+                bankroll: "Bankroll",
+                startBalance: "Start Balance",
+                currentBalance: "Current Balance",
+                netProfit: "Net Profit/Loss",
+                lowBalanceWarning: "⚠️ Low Balance! Risk Management Recommended"
             },
             vi: {
                 appTitle: "NHÀ PHÂN TÍCH CHUỖI ROULETTE",
@@ -1425,7 +1546,12 @@
                 dueToLowerStreak: "do chuỗi thua thấp hơn",
                 historyNumber: "Lịch sử Số",
                 evenOdd: "Chẵn/Lẻ",
-                pattern: "Mẫu"
+                pattern: "Mẫu",
+                bankroll: "Vốn",
+                startBalance: "Vốn Ban Đầu",
+                currentBalance: "Vốn Hiện Tại",
+                netProfit: "Lãi/Lỗ Ròng",
+                lowBalanceWarning: "⚠️ Vốn Thấp! Cần Quản Lý Rủi Ro"
             }
         };
 
@@ -1456,6 +1582,7 @@
             });
 
             updateStrategyDisplay();
+            updateBankrollDisplay();
             if (history.length > 0) {
                 updateDisplay();
             }
@@ -1463,6 +1590,7 @@
 
         function init() {
             createRouletteTable();
+            updateBankrollDisplay();
         }
 
         function createRouletteTable() {
@@ -1506,6 +1634,59 @@
                         }
                     }
                 });
+            }
+        }
+
+        // Bankroll Management Functions
+        function updateStartBalance() {
+            const input = document.getElementById('startBalanceInput');
+            const newBalance = parseFloat(input.value);
+            if (isNaN(newBalance) || newBalance < 0) {
+                input.value = startBalance;
+                return;
+            }
+            startBalance = newBalance;
+            updateBankrollDisplay();
+        }
+
+        function updateBankrollDisplay() {
+            if (history.length === 0) {
+                document.getElementById('bankrollPanel').style.display = 'none';
+                return;
+            }
+            
+            document.getElementById('bankrollPanel').style.display = 'block';
+            
+            const currentBalance = startBalance + colorSessionProfit;
+            const netProfit = currentBalance - startBalance;
+            const roi = startBalance > 0 ? ((netProfit / startBalance) * 100) : 0;
+            
+            // Update displays
+            document.getElementById('currentBalanceDisplay').textContent = '$' + currentBalance.toFixed(2);
+            
+            const profitDisplay = document.getElementById('netProfitDisplay');
+            const profitContainer = document.getElementById('netProfitContainer');
+            const roiDisplay = document.getElementById('roiDisplay');
+            
+            profitDisplay.textContent = (netProfit >= 0 ? '+' : '') + '$' + netProfit.toFixed(2);
+            roiDisplay.textContent = roi.toFixed(2) + '% ROI';
+            
+            // Styling based on profit/loss
+            if (netProfit >= 0) {
+                profitDisplay.className = 'profit-display positive';
+                profitContainer.className = 'bankroll-display positive';
+            } else {
+                profitDisplay.className = 'profit-display negative';
+                profitContainer.className = 'bankroll-display negative';
+            }
+            
+            // Low balance warning (less than 50% of start or negative)
+            const warningEl = document.getElementById('lowBalanceWarning');
+            if (currentBalance < (startBalance * 0.5) || currentBalance <= 0) {
+                warningEl.style.display = 'block';
+                warningEl.textContent = translations[currentLang].lowBalanceWarning;
+            } else {
+                warningEl.style.display = 'none';
             }
         }
 
@@ -1752,6 +1933,7 @@
                 document.getElementById('colorStatsGrid').style.display = 'none';
                 document.getElementById('patternDisplay').style.display = 'none';
                 document.getElementById('colorBettingBox').style.display = 'none';
+                document.getElementById('bankrollPanel').style.display = 'none';
                 return;
             }
             
@@ -1763,6 +1945,7 @@
             document.getElementById('colorStatsGrid').style.display = 'grid';
             document.getElementById('patternDisplay').style.display = 'block';
             document.getElementById('colorBettingBox').style.display = 'block';
+            document.getElementById('bankrollPanel').style.display = 'block';
             
             // Get prediction from current strategy
             let prediction;
@@ -1851,6 +2034,9 @@
             
             // Update betting recommendation with circle
             updateColorBetting();
+            
+            // Update bankroll display
+            updateBankrollDisplay();
             
             // Update strategy display
             updateStrategyDisplay();
@@ -2000,6 +2186,7 @@
         function processColorWinLoss(spinNumber) {
             if (!currentColorPrediction) return;
             
+            // Zero is always a losing bet
             const isRed = redNumbers.includes(spinNumber);
             const isWin = (currentColorPrediction.color === 'red' && isRed) || 
                          (currentColorPrediction.color === 'black' && !isRed && spinNumber !== 0);
@@ -2030,7 +2217,7 @@
                 
                 if (spinNumber === 0) {
                     const zeroText = currentLang === 'vi' ? 'SỐ 0' : 'ZERO';
-                    showStatus(`❌ ${zeroText}! ${spinNumber} is Green. Loss: -$${lastColorBet.toFixed(2)}`, false);
+                    showStatus(`❌ ${zeroText}! ${spinNumber} is Green (Always a Loss). Loss: -$${lastColorBet.toFixed(2)}`, false);
                 } else {
                     const actualColor = isRed ? 
                         (currentLang === 'vi' ? 'ĐỎ' : 'RED') : 
@@ -2042,6 +2229,8 @@
                 colorMartingaleLevel++;
             }
             
+            // Update bankroll display after each win/loss
+            updateBankrollDisplay();
             updateColorBetting();
             updateStrategyDisplay();
         }
@@ -2237,6 +2426,7 @@
                 document.getElementById('colorStatsGrid').style.display = 'none';
                 document.getElementById('patternDisplay').style.display = 'none';
                 document.getElementById('strategyPanel').style.display = 'none';
+                document.getElementById('bankrollPanel').style.display = 'none';
                 return;
             }
 
